@@ -72,7 +72,7 @@ This project is a comprehensive e-commerce application built using the MERN stac
 
 ### Prerequisites
 - Node.js
-- MongoDB
+- PostgreSQL
 - Firebase Project with Authentication enabled
 - Cloudinary Account
 - Stripe Account
@@ -107,9 +107,8 @@ This project is a comprehensive e-commerce application built using the MERN stac
 Create a `.env` file in the `server` directory and add the following environment variables:
 
 ```
-PORT=your_port
-MONGO_URI=your_mongo_db_uri
-MONGO_DB_NAME=mern-chat-app
+PORT=4000
+DATABASE_URL="postgresql://user:password@localhost:5432/shopspot?schema=public"
 JWT_SECRET=your_jwt_secret
 JWT_REFRESH_SECRET=your_jwt_refresh_secret
 ACCESS_TOKEN_EXPIRY=your_access_token_expiry
@@ -128,6 +127,41 @@ Create a `.env` file in the `client` directory and add the following environment
 ```
 VITE_GIPHY_API_KEY=your_giphy_api_key
 ``` 
+
+
+### Database Setup
+
+1.  Ensure PostgreSQL is running and you have created a database (e.g., `shopspot`).
+2.  Update the `DATABASE_URL` in `server/.env` with your credentials.
+3.  Run migrations to create the database schema:
+
+    ```
+    cd server
+    npx prisma migrate dev --name init
+    ```
+
+### Data Import/Export
+
+We provide a helper script to easily export and import your database data.
+
+1.  Make the script executable (first time only):
+    ```
+    chmod +x server/scripts/db_ops.sh
+    ```
+
+2.  **Export Data**:
+    To export your current database to a SQL file:
+    ```
+    cd server/scripts
+    ./db_ops.sh export my_data.sql
+    ```
+
+3.  **Import Data**:
+    To import data from a SQL file into your database:
+    ```
+    cd server/scripts
+    ./db_ops.sh import my_data.sql
+    ```
 
 ### Running the Application
 
