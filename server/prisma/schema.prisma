@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id       String    @id @default(uuid()) @db.Uuid
+  email         String    @unique
+  password_hash String?
+  full_name     String?
+  phone         String?
+  address       String?
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime? @default(now()) @db.Timestamptz(6)
+  is_active     Boolean?
+  img_url       String?   @db.VarChar(255)
+  role_id       Int?
+  date_of_birth DateTime? @db.Date
+  job           String?
+  gender        String?
+  uid           String?   @unique
+  photo_url     String?
+  provider      String?
+  role          String?   @default("user")
+
+  orders        Order[]
+
+  @@map("users")
+}
+
+model Product {
+  product_id      String    @id @default(uuid()) @db.Uuid
+  sku             String?   @unique
+  name            String?
+  description     String?
+  price           Decimal?  @db.Decimal
+  currency        String?   @db.Char(1)
+  created_at      DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime? @default(now()) @db.Timestamptz(6)
+  is_active       Boolean?
+  sale_price      Decimal?  @db.Decimal
+  category_id     Int?
+  product_url     String?   @db.VarChar(255)
+  stock           Int?      @default(0)
+  photos          String[]
+  colors          Json?     @default("[]")
+  sizes           String[]
+  materials       String?
+  care            String?
+  photo_public_id String?
+  featured        Boolean?  @default(false)
+  category_name   String?
+
+  orderItems      OrderItem[]
+
+  @@map("products")
+}
+
+model Order {
+  order_id         String    @id @default(uuid()) @db.Uuid
+  user_id          String?
+  status           String?
+  order_total      Decimal?  @db.Decimal(12, 2)
+  currency         String?   @default("USD") @db.Char(3)
+  created_at       DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime? @default(now()) @db.Timestamptz(6)
+  shipping_info    Json?
+  subtotal         Decimal?  @default(0) @db.Decimal
+  tax              Decimal?  @default(0) @db.Decimal
+  shipping_charges Decimal?  @default(0) @db.Decimal
+  discount         Decimal?  @default(0) @db.Decimal
+
+  user             User?     @relation(fields: [user_id], references: [uid]) // Linking to uid as per controller logic, or user_id?
+  // In controller I used user.user_id. But in auth controller I used uid.
+  // Let's check the User model again. user_id is UUID, uid is String (Firebase UID).
+  // If orders.user_id is TEXT, it likely stores the Firebase UID (uid).
+  // If orders.user_id is UUID, it stores user_id.
+  // I'll assume it stores 'uid' because in Mongoose it was storing user._id which was likely the Mongo ID, but here we have Firebase UID.
+  // Actually, let's check the 'orders' table definition again. user_id is TEXT.
+  // So it probably references 'uid' in 'users' table.
+  
+  orderItems       OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  order_item_id String  @id @default(uuid()) @db.Uuid
+  order_id      String? @db.Uuid
+  product_id    String? @db.Uuid
+  quantity      Int?
+  unit_price    Decimal? @db.Decimal(12, 2)
+  total_price   Decimal? @db.Decimal(12, 2)
+
+  order         Order?   @relation(fields: [order_id], references: [order_id])
+  product       Product? @relation(fields: [product_id], references: [product_id])
+
+  @@map("order_items")
+}
+
+model Coupon {
+  id         String    @id @default(uuid()) @db.Uuid
+  code       String    @unique
+  amount     Decimal
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@map("coupons")
+}
