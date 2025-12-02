@@ -143,30 +143,7 @@ const LoginPage: React.FC = () => {
                         {isLoading ? 'Logging in...' : 'Login with Google'}
                     </button>
                 </div>
-                <div className="mt-4">
-                    <button
-                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
-                        type="button"
-                        onClick={async () => {
-                            setIsLoading(true);
-                            try {
-                                const response = await loginUser({ idToken: "TEST_TOKEN" }).unwrap();
-                                if (response.user) {
-                                    dispatch(userExists(response.user));
-                                    notify("Test Login Successful", 'success');
-                                } else {
-                                    notify("Test Login Failed", 'error');
-                                }
-                            } catch (e: any) {
-                                notify(e.message || "Test Login Failed", 'error');
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        }}
-                    >
-                        Test Login (Admin)
-                    </button>
-                </div>
+
             </div>
         </div>
     );

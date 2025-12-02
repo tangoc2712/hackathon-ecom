@@ -7,30 +7,10 @@ import { RequestWithUser } from '../types/types';
 // Login 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
     const { idToken } = req.body;
+    console.log("Login request body:", req.body);
     try {
-        let uid;
-        if (idToken === "TEST_TOKEN") {
-            uid = "test_user_uid";
-            // Create test user if not exists
-            const existingUser = await prisma.user.findUnique({ where: { uid } });
-            if (!existingUser) {
-                 await prisma.user.create({
-                     data: {
-                         uid,
-                         full_name: "Test User",
-                         email: "test@example.com",
-                         photo_url: "https://via.placeholder.com/150",
-                         provider: "test",
-                         gender: "male",
-                         date_of_birth: new Date(),
-                         role: "admin", // Make admin for testing
-                     }
-                 });
-            }
-        } else {
-            const decodedToken = await admin.auth().verifyIdToken(idToken);
-            uid = decodedToken.uid;
-        }
+        const decodedToken = await admin.auth().verifyIdToken(idToken);
+        const uid = decodedToken.uid;
 
         // Check if user exists in DB
         const user = await prisma.user.findUnique({ where: { uid } });
@@ -47,6 +27,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
         return res.status(200).json({ message: 'Login successful', user });
     } catch (error) {
+        console.error("Login error:", error);
         return res.status(401).json({ message: 'Invalid token' });
     }
 };

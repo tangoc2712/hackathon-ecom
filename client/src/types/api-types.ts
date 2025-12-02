@@ -1,6 +1,6 @@
 export interface User {
     uid: string;
-    name: string;
+    full_name: string;
     dob: string;
     gender: string;
     email: string;
@@ -60,6 +60,7 @@ export interface Product {
     materials?: string;
     care?: string;
     price: number;
+    currency: string;
     description: string;
     featured: boolean;
     createdAt: string;
@@ -139,6 +140,7 @@ export type CartItem = {
     photo: string;
     name: string;
     price: number;
+    currency: string;
     quantity: number;
     stock: number;
     photos?: string[];
@@ -155,25 +157,33 @@ export type ShippingInfo = {
 }
 
 // Order Item
-export type OrderItem = Omit<CartItem, "stock"> & { _id: string };
+export type OrderItem = {
+    order_item_id: string;
+    product_id: string;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+    product?: Product;
+};
 
 // Order 
 export type Order = {
     orderItems: OrderItem[];
-    shippingInfo: ShippingInfo;
+    shipping_info: ShippingInfo;
     subtotal: number;
     tax: number;
-    shippingCharges: number;
+    shipping_charges: number;
     discount: number;
-    total: number;
+    order_total: number;
     status: string;
     user: {
-        name: string;
-        _id: string;
+        full_name: string;
+        uid: string;
     };
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
+    order_id: string;
+    currency: string;
+    created_at: string;
+    updated_at: string;
 }
 
 // All Orders
@@ -210,7 +220,7 @@ export type UpdateOrderRequest = {
 export type Coupon = {
     code: string;
     amount: number;
-    _id: string;
+    id: string;
     createdAt: string;
     updatedAt: string;
 }

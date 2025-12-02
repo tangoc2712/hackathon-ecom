@@ -39,9 +39,9 @@ const AdminOrderDetails: React.FC = () => {
             <BackButton />
             <h1 className="text-3xl font-bold mb-6">Order Details</h1>
             <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-semibold mb-4">Order #{data?.order?._id}</h2>
-                <p className="mb-4"><strong>Customer:</strong> {data?.order?.user.name}</p>
-                <p className="mb-4"><strong>Amount:</strong> ₹ {data?.order?.total}</p>
+                <h2 className="text-2xl font-semibold mb-4">Order #{data?.order?.order_id}</h2>
+                <p className="mb-4"><strong>Customer:</strong> {data?.order?.user.full_name}</p>
+                <p className="mb-4"><strong>Amount:</strong> {data?.order?.currency} {data?.order?.order_total}</p>
                 <p className="mb-4"><strong>Status:</strong> {data?.order?.status}</p>
 
                 <h3 className="text-xl font-semibold mt-6 mb-2">Order Items</h3>
@@ -57,16 +57,16 @@ const AdminOrderDetails: React.FC = () => {
                         </thead>
                         <tbody>
                             {data?.order.orderItems.map(item => (
-                                <tr key={item.productId} className="hover:bg-gray-50">
+                                <tr key={item.order_item_id} className="hover:bg-gray-50">
                                     <td className="py-3 px-4 border-b border-gray-300 text-sm">
                                         <div className="flex items-center space-x-2">
-                                            <img src={item.photo || (item.photos && item.photos.length > 0 ? item.photos[0] : '')} alt={item.name} className="w-10 h-10 object-cover rounded" />
-                                            <span>{item.name}</span>
+                                            <img src={item.product?.photo || (item.product?.photos && item.product?.photos.length > 0 ? item.product?.photos[0] : '')} alt={item.product?.name} className="w-10 h-10 object-cover rounded" />
+                                            <span>{item.product?.name}</span>
                                         </div>
                                     </td>
                                     <td className="py-3 px-4 border-b border-gray-300 text-sm">{item.quantity}</td>
-                                    <td className="py-3 px-4 border-b border-gray-300 text-sm">₹ {item.price}</td>
-                                    <td className="py-3 px-4 border-b border-gray-300 text-sm">₹ {item.quantity * item.price}</td>
+                                    <td className="py-3 px-4 border-b border-gray-300 text-sm">{data?.order?.currency} {item.unit_price}</td>
+                                    <td className="py-3 px-4 border-b border-gray-300 text-sm">{data?.order?.currency} {item.total_price}</td>
                                 </tr>
                             ))}
                         </tbody>

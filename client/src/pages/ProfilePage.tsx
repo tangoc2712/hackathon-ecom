@@ -16,7 +16,7 @@ const ProfilePage: React.FC = () => {
               alt="Profile"
               className="h-32 w-32 rounded-full mb-6 object-cover shadow-lg"
             />
-            <p className="text-2xl font-bold mb-2 text-gray-900">{user.name}</p>
+            <p className="text-2xl font-bold mb-2 text-gray-900">{user.full_name}</p>
             <p className="text-gray-600 mb-4">{user.email}</p>
           </div>
           <div className="mt-4 space-y-4 text-lg text-gray-700">

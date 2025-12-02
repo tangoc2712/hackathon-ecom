@@ -14,7 +14,7 @@ const AdminManageProduct: React.FC = () => {
     const { data, isLoading, isError, error } = useProductDetailsQuery(productId!);
 
     // Destructuring the product object
-    const { category, name, stock, price, featured, createdAt, updatedAt, description } = data?.product || {
+    const { category, name, stock, price, featured, createdAt, updatedAt, description, currency } = data?.product || {
         photo: "",
         category: "",
         name: "",
@@ -24,6 +24,7 @@ const AdminManageProduct: React.FC = () => {
         createdAt: "",
         updatedAt: "",
         description: "",
+        currency: "",
     }
 
     const [priceUpdate, setPriceUpdate] = useState<number>(price);
@@ -211,7 +212,7 @@ const AdminManageProduct: React.FC = () => {
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-gray-700 mb-2">Price ( ₹ )
+                        <label className="block text-gray-700 mb-2">Price ({currency || '₹'})
                         </label>
                         <input
                             type="number"

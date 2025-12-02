@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Login from '../components/auth/Login';
 import Signup from '../components/auth/Signup';
-import Illustration from '../assets/2672252.jpg'; // Ensure you have the illustration image
 
 const AuthPage: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -12,15 +11,7 @@ const AuthPage: React.FC = () => {
         {/* Left Side - Illustration */}
 
         <div className="hidden md:flex flex-col md:w-1/2 items-center justify-center">
-          {/* logo - shopspot */}
-
-          <h1 className="text-3xl font-bold text-center mb-4 text-black">
-            ShopSpot
-          </h1>
-          <p className="text-gray-500 text-center">
-            Your one-stop shop for all your needs
-          </p>
-          <img src={Illustration} alt="Illustration" className="object-cover" />
+          <img src="/shopspot-logo.svg" alt="Illustration" className="object-cover" />
         </div>
         {/* Right Side - Form */}
         <div className="w-full md:w-1/2 p-8">
@@ -34,19 +25,10 @@ const AuthPage: React.FC = () => {
               {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
             </button>
           </div>
-          <div className="mt-4 text-center">
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded"
-              onClick={() => {
-                // Placeholder
-              }}
-            >
-              Test Login (See Login Component)
-            </button>
-          </div>
+
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

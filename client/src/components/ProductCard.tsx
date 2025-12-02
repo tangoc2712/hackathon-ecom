@@ -57,7 +57,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         {/* Price */}
         <p className="text-lg font-bold text-black mt-1">
-          ${(product.price / 100).toFixed(2)}
+          {product.currency || '₹'} {Number(product.price).toFixed(2)}
         </p>
 
         {/* Rating (Mock) */}

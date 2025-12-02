@@ -41,6 +41,7 @@ const AdminCoupons = lazy(() => import('./pages/admin/Coupons'));
 const AdminFeaturedProducts = lazy(() => import('./pages/admin/FeaturedProduct'));
 const AdminManageProduct = lazy(() => import('./components/admin/ManageProduct'));
 const AdminOrderDetails = lazy(() => import('./pages/admin/AdmiOrderDetails'));
+const AdminLooker = lazy(() => import('./pages/admin/AdminLooker'));
 
 // Other pages
 const MyOrders = lazy(() => import('./pages/MyOrders'));
@@ -113,6 +114,7 @@ const App: React.FC = () => {
                                     <Route path="coupons" element={<AdminCoupons />} />
                                     <Route path="orders" element={<AdminOrders />} />
                                     <Route path="orders/:orderId" element={<AdminOrderDetails />} />
+                                    <Route path="looker" element={<AdminLooker />} />
                                 </Route>
                             </Route>
 

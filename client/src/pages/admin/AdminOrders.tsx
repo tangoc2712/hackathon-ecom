@@ -42,14 +42,14 @@ const AdminOrders: React.FC = () => {
                             </thead>
                             <tbody>
                                 {orders.map((order) => (
-                                    <tr key={order._id} className="hover:bg-gray-50">
-                                        <td className="py-3 px-4 border-b border-gray-300 text-sm">{order._id}</td>
-                                        <td className="py-3 px-4 border-b border-gray-300 text-sm">{order.user.name}</td>
-                                        <td className="py-3 px-4 border-b border-gray-300 text-sm">₹ {order.total}</td>
+                                    <tr key={order.order_id} className="hover:bg-gray-50">
+                                        <td className="py-3 px-4 border-b border-gray-300 text-sm">{order.order_id}</td>
+                                        <td className="py-3 px-4 border-b border-gray-300 text-sm">{order.user?.full_name || "Unknown"}</td>
+                                        <td className="py-3 px-4 border-b border-gray-300 text-sm">{order.currency} {order.order_total}</td>
                                         <td className="py-3 px-4 border-b border-gray-300 text-sm">{order.status}</td>
                                         <td className="py-3 px-4 border-b border-gray-300 text-sm">
                                             <button
-                                                onClick={() => handleViewDetails(order._id)}
+                                                onClick={() => handleViewDetails(order.order_id)}
                                                 className="bg-blue-500 text-white px-3 py-2 rounded-md text-xs hover:bg-blue-600 transition duration-300"
                                             >
                                                 View Details

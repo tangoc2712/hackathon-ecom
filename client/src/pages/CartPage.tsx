@@ -88,7 +88,7 @@ const Cart: React.FC = () => {
                           </div>
                         </Link>
                       </td>
-                      <td className="p-4">₹ {item.price.toFixed(2)}</td>
+                      <td className="p-4">{item.currency} {Number(item.price).toFixed(2)}</td>
                       <td className="p-4">
                         <div className="flex items-center space-x-2">
                           <button
@@ -111,7 +111,7 @@ const Cart: React.FC = () => {
                           </button>
                         </div>
                       </td>
-                      <td className="p-4">₹ {(item.price * item.quantity).toFixed(2)}</td>
+                      <td className="p-4">{item.currency} {(Number(item.price) * item.quantity).toFixed(2)}</td>
                       <td className="p-4">
                         <button
                           onClick={() => handleRemove(item.productId)}
@@ -150,25 +150,25 @@ const Cart: React.FC = () => {
             <h2 className="font-bold text-lg mb-4">Cart total</h2>
             <div className="flex justify-between mb-4">
               <span>Subtotal</span>
-              <span>₹ {subTotal.toFixed(2)}</span>
+              <span>{cartItems.length > 0 ? cartItems[0].currency : '₹'} {subTotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between mb-4">
               <span>Tax</span>
-              <span>₹ {tax.toFixed(2)}</span>
+              <span>{cartItems.length > 0 ? cartItems[0].currency : '₹'} {tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between mb-4">
               <span>Shipping</span>
-              <span>₹ {shippingCharges.toFixed(2)}</span>
+              <span>{cartItems.length > 0 ? cartItems[0].currency : '₹'} {shippingCharges.toFixed(2)}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between mb-4">
                 <span>Discount</span>
-                <span>₹ {discount.toFixed(2)}</span>
+                <span>{cartItems.length > 0 ? cartItems[0].currency : '₹'} {discount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between mb-4 font-bold">
               <span>Total amount</span>
-              <span>₹ {(total - discount).toFixed(2)}</span>
+              <span>{cartItems.length > 0 ? cartItems[0].currency : '₹'} {(total - discount).toFixed(2)}</span>
             </div>
 
             <div className="flex flex-col md:flex-row mb-4 space-y-2 md:space-y-0 md:space-x-2">

@@ -5,23 +5,29 @@ import { useNavigate } from 'react-router-dom';
 import { Cell, Column, ColumnInstance, HeaderGroup, Row, useSortBy, useTable } from 'react-table';
 import Pagination from '../../components/common/Pagination'; // Assuming you have a Pagination component
 import SkeletonLoader from '../../components/common/SkeletonLoader';
-import { useAllProductsQuery } from '../../redux/api/product.api';
+import { useDeleteProductMutation, useAllProductsQuery } from '../../redux/api/product.api';
 import { CustomError, Product } from '../../types/api-types';
 import { notify } from '../../utils/util';
+
+interface SortableColumnInstance<D extends object = {}> extends ColumnInstance<D> {
+  getSortByToggleProps: (props?: any) => any;
+  isSorted: boolean;
+  isSortedDesc: boolean;
+  disableSortBy?: boolean;
+}
 
 const AdminProducts: React.FC = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [limit] = useState(8); // Items per page
   const [sortBy, setSortBy] = useState<{ id: string; desc: boolean }>({ id: '', desc: false });
-  const { data: productsData, isLoading, isError, error, refetch } = useAllProductsQuery({ page, limit, sortBy });
-  const [data, setData] = useState<Product[]>([]);
 
-  useEffect(() => {
-    if (productsData?.products) {
-      setData(productsData.products);
-    }
-  }, [productsData]);
+  const { data: productsData, isLoading, isError, error, refetch } = useAllProductsQuery({ page, limit, sortBy });
+  const [deleteProduct] = useDeleteProductMutation();
+
+  const products = useMemo(() => productsData?.products || [], [productsData]);
+  const totalPages = productsData?.totalPages || 1;
+  const currentPage = productsData?.currentPage || 1;
 
   useEffect(() => {
     if (isError && error) {
@@ -43,7 +49,11 @@ const AdminProducts: React.FC = () => {
       { Header: 'Product', accessor: 'name' },
       { Header: 'Category', accessor: 'category' },
       { Header: 'Stock', accessor: 'stock' },
-      { Header: 'Price', accessor: 'price' },
+      {
+        Header: 'Price',
+        accessor: 'price',
+        Cell: ({ row }: { row: Row<Product> }) => `${row.original.currency || '₹'} ${row.original.price}`,
+      },
       {
         Header: 'Actions',
         Cell: ({ row }: { row: Row<Product> }) => (
@@ -66,7 +76,7 @@ const AdminProducts: React.FC = () => {
     headerGroups,
     rows,
     prepareRow,
-  } = useTable<Product>({ columns, data }, useSortBy);
+  } = useTable<Product>({ columns, data: products }, useSortBy);
 
   const handleSort = (columnId: string) => {
     setSortBy((prevSortBy) => {
@@ -87,7 +97,7 @@ const AdminProducts: React.FC = () => {
   };
 
   const exportToCSV = () => {
-    const csvData = Papa.unparse(data);
+    const csvData = Papa.unparse(products);
     const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -136,7 +146,7 @@ const AdminProducts: React.FC = () => {
           </button>
         </div>
       </div>
-      {data.length === 0 ? (
+      {products.length === 0 ? (
         <div className="text-center text-gray-500">No products available.</div>
       ) : (
         <div className="overflow-x-auto">
@@ -147,13 +157,13 @@ const AdminProducts: React.FC = () => {
                 return (
                   <tr key={headerGroupIndex} {...headerGroupProps}>
                     {headerGroup.headers.map((column, columnIndex) => {
-                      const colInstance = column as ColumnInstance<Product>;
+                      const colInstance = column as unknown as SortableColumnInstance<Product>;
                       const { key: columnKey, ...restHeaderProps } = colInstance.getHeaderProps(colInstance.getSortByToggleProps());
                       return (
                         <th
-                          key={columnIndex} // Use index as key
-                          {...restHeaderProps} // Spread the rest of the props
-                          className={`p-2 border-b cursor-pointer ${colInstance.isSorted ? 'bg-blue-50' : ''}`}
+                          key={columnIndex}
+                          {...restHeaderProps}
+                          className="py-3 px-4 border-b border-gray-300 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider cursor-pointer hover:bg-gray-200"
                           onClick={() => !colInstance.disableSortBy && handleSort(colInstance.id)}
                         >
                           <div className="flex items-center">
@@ -199,8 +209,8 @@ const AdminProducts: React.FC = () => {
       )}
       <div className="mt-4">
         <Pagination
-          totalPages={productsData?.totalPages}
-          currentPage={productsData?.currentPage}
+          totalPages={totalPages}
+          currentPage={currentPage}
           onPageChange={handlePageChange}
         />
       </div>

@@ -96,7 +96,8 @@ export const getUserOrders = asyncHandler(async (req: Request, res: Response, ne
     const user = (req as RequestWithUser).user;
 
     const orders = await prisma.order.findMany({
-        where: { user_id: user.user_id }
+        where: { user_id: user.uid },
+        include: { user: true }
     });
 
     return res.status(200).json({
@@ -107,7 +108,9 @@ export const getUserOrders = asyncHandler(async (req: Request, res: Response, ne
 
 // Get All Orders
 export const getAllOrders = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const orders = await prisma.order.findMany(); 
+    const orders = await prisma.order.findMany({
+        include: { user: true }
+    }); 
     // Populate user is not directly possible like Mongoose, need to include relation.
     // But I haven't defined relation in schema yet. 
     // I will add include: { user: true } after updating schema.
@@ -123,7 +126,15 @@ export const getOrder = asyncHandler(async (req: Request, res: Response, next: N
     const orderId = req.params.id;
 
     const order = await prisma.order.findUnique({
-        where: { order_id: orderId }
+        where: { order_id: orderId },
+        include: { 
+            user: true, 
+            orderItems: {
+                include: {
+                    product: true
+                }
+            } 
+        }
     });
 
     if (!order) return next(new ApiError(404, 'Order not found'));

@@ -66,6 +66,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isSidebarOpen, toggleSideba
           </NavLink>
 
           <NavLink
+            to="/admin/looker"
+            className={({ isActive }) =>
+              isActive ? 'flex items-center p-2 my-4 text-blue-600 font-bold' : 'flex items-center p-2 my-4 text-gray-600 hover:text-blue-600'
+            }
+            onClick={toggleSidebar}
+          >
+            <FaTachometerAlt className="mr-2" />
+            Dashboard Looker
+          </NavLink>
+
+          <NavLink
             to="/admin/products"
             className={({ isActive }) =>
               isActive ? 'flex items-center p-2 my-4 text-blue-600 font-bold' : 'flex items-center p-2 my-4 text-gray-600 hover:text-blue-600'

@@ -10,9 +10,11 @@ const prisma = new PrismaClient();
 const scrapeUniqlo = async () => {
     try {
         console.log("Connecting to DB...");
-        // Clear existing products to avoid duplicates/bad data
-        await prisma.product.deleteMany({});
-        console.log("Cleared existing products.");
+        // Soft delete existing products to avoid FK errors
+        await prisma.product.updateMany({
+            data: { is_active: false }
+        });
+        console.log("Marked existing products as inactive.");
 
         const browser = await puppeteer.launch({ headless: false });
         const page = await browser.newPage();
@@ -20,10 +22,10 @@ const scrapeUniqlo = async () => {
         await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
         const categoryUrls = [
-            { url: 'https://www.uniqlo.com/us/en/men/tops/t-shirts', category: 'MEN' },
-            { url: 'https://www.uniqlo.com/us/en/women/tops/t-shirts', category: 'WOMEN' },
-            { url: 'https://www.uniqlo.com/us/en/kids/tops/t-shirts', category: 'KIDS' },
-            { url: 'https://www.uniqlo.com/us/en/baby/tops', category: 'BABY' },
+            { url: 'https://www.uniqlo.com/vn/vi/men/tops/t-shirts', category: 'MEN' },
+            { url: 'https://www.uniqlo.com/vn/vi/women/tops/t-shirts', category: 'WOMEN' },
+            { url: 'https://www.uniqlo.com/vn/vi/kids/tops/t-shirts', category: 'KIDS' },
+            { url: 'https://www.uniqlo.com/vn/vi/baby/tops', category: 'BABY' },
         ];
 
         for (const { url, category } of categoryUrls) {
@@ -40,8 +42,8 @@ const scrapeUniqlo = async () => {
             console.log(`Found ${uniqueLinks.length} products in category.`);
             let featuredCount = 0;
             
-            // Limit to 5 products per category for speed, user can increase later
-            for (const link of uniqueLinks.slice(0, 5)) { 
+            // Limit to 50 products per category
+            for (const link of uniqueLinks.slice(0, 50)) { 
                 const fullLink = link.startsWith('http') ? link : `https://www.uniqlo.com${link}`;
                 console.log(`Scraping ${fullLink}...`);
                 
@@ -59,10 +61,27 @@ const scrapeUniqlo = async () => {
                         }
 
                         // Price
-                        const priceText = document.querySelector('.price')?.textContent || 
-                                          document.querySelector('[data-test="product-price"]')?.textContent || 
-                                          "29.90";
-                        const price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+                        const priceEl = document.querySelector('.price') || 
+                                        document.querySelector('[data-test="product-price"]') ||
+                                        document.querySelector('.fr-price') ||
+                                        document.querySelector('[class*="price"]');
+                        
+                        const priceText = priceEl?.textContent || "0";
+                        // Debug log (will be printed in node console if we return it or use console.log inside evaluate which might not show)
+                        // Actually console.log inside evaluate shows in browser console. To see in node, we need on('console').
+                        
+                        // Handle VND: 299.000 VND -> 299000
+                        // Handle VND: 299.000 VND -> 299000
+                        // Handle ranges/messy text: "VND195.000 VND97.000 ..." -> 195000
+                        const priceMatch = priceText.match(/(\d{1,3}(?:\.\d{3})*)/);
+                        let price = priceMatch ? parseFloat(priceMatch[0].replace(/\./g, '')) : 0;
+                        
+                        // Convert to USD (Rate: 25,450)
+                        if (price > 0) {
+                            price = parseFloat((price / 25450).toFixed(2));
+                        } else {
+                            price = 29.90; // Default dummy price
+                        }
 
                         // Description
                         let description = document.querySelector('[data-test="product-description"]')?.innerHTML || 
@@ -102,16 +121,19 @@ const scrapeUniqlo = async () => {
                             description,
                             photos: photos.slice(0, 5),
                             colors: colors.length > 0 ? colors : [],
+                            debugPriceText: priceText, // Return for debugging
                         };
                     });
 
                     if (productData.name !== "Unknown Product" && !productData.name.includes("Cookie Consent")) {
                         const isFeatured = featuredCount < 2;
                         
+                        console.log(`Preparing to save: ${productData.name} | Price: ${productData.price} (Raw: ${productData.debugPriceText})`);
+
                         await prisma.product.create({
                             data: {
                                 name: productData.name,
-                                price: productData.price * 100, // Store in cents if needed, or check schema. Schema says Decimal. Let's store as is or *100? 
+                                price: productData.price, // Store as is (VND is integer usually) 
                                 // Schema: price Decimal? @db.Decimal
                                 // Controller uses Number(price).
                                 // Let's store as is for now, but usually e-com uses cents. 
@@ -122,7 +144,7 @@ const scrapeUniqlo = async () => {
                                 description: productData.description,
                                 stock: 100,
                                 category_name: category.toLowerCase(),
-                                photos: productData.photos,
+                                photos: productData.photos as string[],
                                 photo_public_id: "scraped_" + Date.now(),
                                 featured: isFeatured,
                                 colors: productData.colors,
@@ -131,7 +153,7 @@ const scrapeUniqlo = async () => {
                         });
 
                         if (isFeatured) featuredCount++;
-                        console.log(`Saved: ${productData.name}`);
+                        console.log(`Saved: ${productData.name} | Price: ${productData.price} (Raw: ${productData.debugPriceText})`);
                     } else {
                         console.log(`Skipped (Invalid Name): ${productData.name}`);
                     }

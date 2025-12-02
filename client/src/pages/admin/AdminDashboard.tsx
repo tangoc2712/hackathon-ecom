@@ -20,11 +20,11 @@ const AdminDashboard: React.FC = () => {
     }, [stats]);
 
     const columns: Column[] = React.useMemo(() => [
-        { Header: 'Order ID', accessor: '_id' },
-        { Header: 'Date', accessor: 'createdAt', Cell: ({ value }) => dayjs(value).format('DD MMM YYYY') },
+        { Header: 'Order ID', accessor: 'order_id' },
+        { Header: 'Date', accessor: 'created_at', Cell: ({ value }) => dayjs(value).format('DD MMM YYYY') },
         { Header: 'Status', accessor: 'status' },
         { Header: 'Total Products', accessor: 'orderItems' },
-        { Header: 'Amount', accessor: 'total' },
+        { Header: 'Amount', accessor: 'order_total', Cell: ({ value, row }: any) => `${row.original.currency} ${value}` },
     ], []);
 
     const {
@@ -76,7 +76,7 @@ const AdminDashboard: React.FC = () => {
         <div className="p-4">
             {/* Widgets section */}
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <Widget heading="Total Revenue" value={`₹${stats.totalRevenue}`} description="Overall revenue" color="bg-blue-500" />
+                <Widget heading="Total Revenue" value={`${stats.totalRevenue}`} description="Overall revenue" color="bg-blue-500" />
                 <Widget heading="Total Orders" value={stats.totalOrders.toString()} description="Total number of orders" color="bg-green-500" />
                 <Widget heading="Active Coupons" value={stats.totalCoupons.toString()} description="Currently active coupons" color="bg-purple-500" />
                 <Widget heading="Total Products" value={stats.totalProducts.toString()} description="Total number of products" color="bg-red-500" />

@@ -31,40 +31,40 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
         ]);
 
         // Calculate total revenue
-        const totalRevenue = orders.reduce((acc, order) => acc + Number(order.order_total), 0);
+        const totalRevenue = orders.reduce((acc, order) => acc + (Number(order.order_total) || 0), 0);
 
         // Calculate revenue by month
         const revenueByMonth = orders.reduce((acc, order) => {
-            const date = order.created_at || new Date();
+            const date = order.created_at ? new Date(order.created_at) : new Date();
             const month = date.getMonth();
-            acc[month] = (acc[month] || 0) + Number(order.order_total);
+            acc[month] = (acc[month] || 0) + (Number(order.order_total) || 0);
             return acc;
         }, {} as Record<number, number>);
 
         // Calculate revenue by week
         const revenueByWeek = orders.reduce((acc, order) => {
-            const date = order.created_at || new Date();
+            const date = order.created_at ? new Date(order.created_at) : new Date();
             const week = getWeekOfYear(date);
-            acc[week] = (acc[week] || 0) + Number(order.order_total);
+            acc[week] = (acc[week] || 0) + (Number(order.order_total) || 0);
             return acc;
         }, {} as Record<number, number>);
 
         // Calculate revenue by day
         const revenueByDay = orders.reduce((acc, order) => {
-            const date = order.created_at || new Date();
+            const date = order.created_at ? new Date(order.created_at) : new Date();
             const day = date.toISOString().split('T')[0];
-            acc[day] = (acc[day] || 0) + Number(order.order_total);
+            acc[day] = (acc[day] || 0) + (Number(order.order_total) || 0);
             return acc;
         }, {} as Record<string, number>);
 
         // Calculate sales by category
-        // Note: orderItems logic needs to be adjusted based on how we store items.
-        // Assuming orderItems are fetched via relation.
         const salesByCategory = orders.reduce((acc, order) => {
-            order.orderItems.forEach((item) => {
-                const productId = item.product_id || "unknown"; 
-                acc[productId] = (acc[productId] || 0) + (item.quantity || 0);
-            });
+            if (order.orderItems) {
+                order.orderItems.forEach((item) => {
+                    const productId = item.product_id || "unknown"; 
+                    acc[productId] = (acc[productId] || 0) + (item.quantity || 0);
+                });
+            }
             return acc;
         }, {} as Record<string, number>);
 
@@ -79,14 +79,14 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
 
         // Get the latest 5 orders
         const latestOrders = orders.sort((a, b) => {
-            const dateA = a.created_at || new Date(0);
-            const dateB = b.created_at || new Date(0);
+            const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+            const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
             return dateB.getTime() - dateA.getTime();
         }).slice(0, 5);
 
         // Format gender demographic for frontend if needed
         const formattedGenderDemographic = userGenderDemographic.map(item => ({
-            _id: item.gender,
+            _id: item.gender || "Not Specified",
             count: item._count.gender
         }));
 
@@ -107,7 +107,8 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
             },
         });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error });
+        console.error("Error in getStats:", error);
+        res.status(500).json({ message: 'Server error', error: String(error) });
     }
 };
 

@@ -36,15 +36,15 @@ const MyOrders: React.FC = () => {
                         </thead>
                         <tbody>
                             {data.orders.map((order) => (
-                                <tr className="border-b hover:bg-gray-100" key={order._id}>
-                                    <td className="p-4 text-sm md:text-base">{order._id}</td>
-                                    <td className="p-4 text-sm md:text-base">{new Date(order.createdAt).toLocaleDateString()}</td>
-                                    <td className="p-4 text-sm md:text-base">{order.status  }</td>
-                                    <td className="p-4 text-sm md:text-base">${order.total.toFixed(2)}</td>
+                                <tr className="border-b hover:bg-gray-100" key={order.order_id}>
+                                    <td className="p-4 text-sm md:text-base">{order.order_id}</td>
+                                    <td className="p-4 text-sm md:text-base">{new Date(order.created_at).toLocaleDateString()}</td>
+                                    <td className="p-4 text-sm md:text-base">{order.status}</td>
+                                    <td className="p-4 text-sm md:text-base">{order.currency} {Number(order.order_total || 0).toFixed(2)}</td>
                                     <td className="p-4">
                                         <button
                                             className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm md:text-base hover:bg-blue-600 transition"
-                                            onClick={() => navigate(`/order/${order._id}`)}
+                                            onClick={() => navigate(`/order/${order.order_id}`)}
                                         >
                                             View Details
                                         </button>

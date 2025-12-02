@@ -88,14 +88,14 @@ const AdminCoupons: React.FC = () => {
                             </thead>
                             <tbody>
                                 {data?.coupons.map((coupon) => (
-                                    <tr key={coupon._id} className="hover:bg-gray-50">
+                                    <tr key={coupon.id} className="hover:bg-gray-50">
                                         <td className="py-3 px-4 border-b border-gray-300 text-sm">{coupon.code}</td>
-                                        <td className="py-3 px-4 border-b border-gray-300 text-sm">₹ {coupon.amount.toFixed(2)}</td>
+                                        <td className="py-3 px-4 border-b border-gray-300 text-sm">{coupon.amount.toFixed(2)}</td>
                                         <td className="py-3 px-4 border-b border-gray-300 text-sm">{dayjs(coupon.createdAt).format('DD/MM/YYYY')
                                         }</td>
                                         <td className="py-3 px-4 border-b border-gray-300 text-sm">
                                             <button
-                                                onClick={() => handleDeleteCoupon(coupon._id)}
+                                                onClick={() => handleDeleteCoupon(coupon.id)}
                                                 className="bg-red-500 text-white px-4 py-2 rounded-md text-xs hover:bg-red-600 transition duration-300"
                                             >
                                                 Delete

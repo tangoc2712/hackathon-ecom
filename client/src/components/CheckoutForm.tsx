@@ -124,11 +124,11 @@ const CheckoutForm: React.FC = () => {
           </div>
           <h2 className="text-2xl font-bold mb-4">Payment Details</h2>
           <div className="text-lg mb-4">
-            <p>Total Amount: ₹ {total.toFixed(2)}</p>
+            <p>Total Amount: {cartItems.length > 0 ? cartItems[0].currency : '₹'} {total.toFixed(2)}</p>
           </div>
           <PaymentElement className="mb-4" />
           <button type="submit" disabled={isProcessing} className="bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
-            {isProcessing ? "Processing..." : `Pay ₹ ${total.toFixed(2)}`}
+            {isProcessing ? "Processing..." : `Pay ${cartItems.length > 0 ? cartItems[0].currency : '₹'} ${total.toFixed(2)}`}
           </button>
           <button
             type="button"

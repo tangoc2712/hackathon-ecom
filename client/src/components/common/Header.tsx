@@ -94,14 +94,14 @@ const Header: React.FC = () => {
   // };
 
   return (
-    <header className="bg-white text-black border-b border-gray-200">
+    <header className="bg-white text-black border-b border-gray-200 relative z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center">
           <Link to="/" onClick={closeMobileMenu} className="flex items-center justify-center w-12 h-12 bg-primary text-white font-bold text-xl">
-            UNI
+            SHOP
             <br />
-            QLO
+            SPOT
           </Link>
         </div>
 
@@ -134,18 +134,18 @@ const Header: React.FC = () => {
                 className="absolute right-0 mt-2 w-48 bg-white text-black border border-gray-200 shadow-lg py-2 z-50"
               >
                 <div className="px-4 py-2 border-b border-gray-100 font-bold text-sm">
-                  {user.name || "User"}
+                  {user.full_name || "User"}
                 </div>
                 {user.role === 'admin' ? (
                   <>
-                    <button onClick={() => navigate('/admin')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Admin Dashboard</button>
-                    <button onClick={logoutHandler} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Logout</button>
+                    <button onClick={() => navigate('/admin')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">Admin Dashboard</button>
+                    <button onClick={logoutHandler} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">Logout</button>
                   </>
                 ) : (
                   <>
-                    <button onClick={() => navigate('/profile')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Profile</button>
-                    <button onClick={() => navigate('/my-orders')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">My Orders</button>
-                    <button onClick={logoutHandler} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Logout</button>
+                    <button onClick={() => navigate('/profile')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">Profile</button>
+                    <button onClick={() => navigate('/my-orders')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">My Orders</button>
+                    <button onClick={logoutHandler} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">Logout</button>
                   </>
                 )}
               </div>
