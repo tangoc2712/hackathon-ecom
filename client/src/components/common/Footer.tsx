@@ -34,13 +34,12 @@ const Footer: React.FC = () => {
           {/* Navigation Links Section */}
           {/* Find Product Links */}
           <div className='text-center'>
-            <h3 className="text-xl font-bold mb-2">Find product</h3>
+            <h3 className="text-xl font-bold mb-2">Line Up</h3>
             <ul className="space-y-1">
-              <li className="text-sm hover:text-gray-400"><a href="#">Browse Arnold</a></li>
-              <li className="text-sm hover:text-gray-400"><a href="#">Chronograph Blue</a></li>
-              <li className="text-sm hover:text-gray-400"><a href="#">Smart Phones</a></li>
-              <li className="text-sm hover:text-gray-400"><a href="#">Automatic Watch</a></li>
-              <li className="text-sm hover:text-gray-400"><a href="#">Hair Straighteners</a></li>
+              <li className="text-sm hover:text-gray-400"><a href="#">TuanTV19</a></li>
+              <li className="text-sm hover:text-gray-400"><a href="#">NgocTQ8</a></li>
+              <li className="text-sm hover:text-gray-400"><a href="#">NamNH1</a></li>
+              <li className="text-sm hover:text-gray-400"><a href="#">KhangTP3</a></li>
             </ul>
           </div>
 
@@ -71,7 +70,7 @@ const Footer: React.FC = () => {
 
         {/* Footer Bottom Section */}
         <div className="border-t border-gray-500 mt-8 pt-4">
-          <p className="text-center text-sm">&copy; 2024 ShopSpot. All rights reserved.</p>
+          <p className="text-center text-sm">&copy; 2025 ShopSpot. All rights reserved.</p>
         </div>
       </div>
     </footer>
