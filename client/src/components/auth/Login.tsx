@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
-import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from 'react-redux';
-import { auth } from '../../firebaseConfig';
 import { useLoginUserMutation } from '../../redux/api/user.api';
 import { userExists } from '../../redux/reducers/user.reducer';
 import { AppDispatch } from '../../redux/store';
 import { notify } from '../../utils/util';
-import {
-    GoogleAuthProvider,
-    UserCredential,
-    signInWithEmailAndPassword,
-    signInWithPopup
-} from 'firebase/auth';
+
 
 const LOGIN_SUCCESS = 'Login successful';
 const LOGIN_FAILED = 'Login failed';
@@ -25,27 +18,6 @@ const LoginPage: React.FC = () => {
     const [loginUser] = useLoginUserMutation();
     const dispatch = useDispatch<AppDispatch>();
 
-    // Handles the response from Firebase login and updates the Redux store
-    const handleResponse = async (userCredential: UserCredential, successMessage: string, failureMessage: string) => {
-        try {
-            const idToken = await userCredential.user.getIdToken();
-            const response = await loginUser({ idToken }).unwrap();
-
-            if (response.user) {
-                dispatch(userExists(response.user));
-                notify(successMessage, 'success');
-            } else {
-                notify(failureMessage, 'error');
-            }
-        } catch (error: any) {
-            const errorMessage = error.data?.message || 'An unknown error occurred';
-            notify(errorMessage, 'error');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    // Handles login with email and password
     const handleLogin = async () => {
         if (!email || !password) {
             notify('Email and password are required', 'error');
@@ -53,31 +25,17 @@ const LoginPage: React.FC = () => {
         }
         setIsLoading(true);
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            await handleResponse(userCredential, LOGIN_SUCCESS, LOGIN_FAILED);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                notify(error.message, 'error');
+            const response = await loginUser({ email, password }).unwrap();
+            if (response.user) {
+                dispatch(userExists(response.user));
+                notify(LOGIN_SUCCESS, 'success');
             } else {
-                notify('An unknown error occurred', 'error');
+                notify(LOGIN_FAILED, 'error');
             }
-            setIsLoading(false);
-        }
-    };
-
-    // Handles login with Google
-    const handleGoogleLogin = async () => {
-        const provider = new GoogleAuthProvider();
-        setIsLoading(true);
-        try {
-            const userCredential = await signInWithPopup(auth, provider);
-            await handleResponse(userCredential, LOGIN_SUCCESS, LOGIN_FAILED);
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                notify("Google sign-in failed", 'error');
-            } else {
-                notify('An unknown error occurred', 'error');
-            }
+        } catch (error: any) {
+            const errorMessage = error.data?.message || 'An unknown error occurred';
+            notify(errorMessage, 'error');
+        } finally {
             setIsLoading(false);
         }
     };
@@ -127,22 +85,7 @@ const LoginPage: React.FC = () => {
                     </button>
                 </div>
 
-                <div className="mt-4 flex items-center justify-center">
-                    <hr className="flex-grow border-t border-gray-300" />
-                    <span className="mx-4 text-gray-500">OR</span>
-                    <hr className="flex-grow border-t border-gray-300" />
-                </div>
 
-                <div className="mt-4">
-                    <button
-                        className={`flex items-center justify-center text-gray-700 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 shadow-md bg-white hover:bg-gray-100 gap-2 w-full border border-gray-300 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={handleGoogleLogin}
-                        disabled={isLoading}
-                    >
-                        <FcGoogle className='text-2xl' />
-                        {isLoading ? 'Logging in...' : 'Login with Google'}
-                    </button>
-                </div>
 
             </div>
         </div>

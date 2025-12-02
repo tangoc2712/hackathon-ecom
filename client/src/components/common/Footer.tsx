@@ -11,7 +11,7 @@ const Footer: React.FC = () => {
           {/* Company Info Section */}
           <div className='text-center'>
             <h2 className="text-3xl font-bold ">ShopSpot</h2>
-            <p className="mt-2 text-sm">54 St James Boulevard <br /> Hoswick, ZE2 7ZJ</p>
+            <p className="mt-2 text-sm">FVille 1 <br /> FSoft, Hanoi</p>
 
             {/* Social Media Links */}
             <div className="flex space-x-4 mt-4 items-center justify-center">

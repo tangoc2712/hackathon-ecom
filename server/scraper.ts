@@ -22,10 +22,10 @@ const scrapeUniqlo = async () => {
         await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
         const categoryUrls = [
-            { url: 'https://www.uniqlo.com/vn/vi/men/tops/t-shirts', category: 'MEN' },
-            { url: 'https://www.uniqlo.com/vn/vi/women/tops/t-shirts', category: 'WOMEN' },
-            { url: 'https://www.uniqlo.com/vn/vi/kids/tops/t-shirts', category: 'KIDS' },
-            { url: 'https://www.uniqlo.com/vn/vi/baby/tops', category: 'BABY' },
+            { url: 'https://www.uniqlo.com/us/en/men/tops/t-shirts', category: 'MEN' },
+            { url: 'https://www.uniqlo.com/us/en/women/tops/t-shirts', category: 'WOMEN' },
+            { url: 'https://www.uniqlo.com/us/en/kids/tops/t-shirts', category: 'KIDS' },
+            { url: 'https://www.uniqlo.com/us/en/baby/tops/t-shirts', category: 'BABY' },
         ];
 
         for (const { url, category } of categoryUrls) {
@@ -67,20 +67,15 @@ const scrapeUniqlo = async () => {
                                         document.querySelector('[class*="price"]');
                         
                         const priceText = priceEl?.textContent || "0";
-                        // Debug log (will be printed in node console if we return it or use console.log inside evaluate which might not show)
-                        // Actually console.log inside evaluate shows in browser console. To see in node, we need on('console').
                         
-                        // Handle VND: 299.000 VND -> 299000
-                        // Handle VND: 299.000 VND -> 299000
-                        // Handle ranges/messy text: "VND195.000 VND97.000 ..." -> 195000
-                        const priceMatch = priceText.match(/(\d{1,3}(?:\.\d{3})*)/);
-                        let price = priceMatch ? parseFloat(priceMatch[0].replace(/\./g, '')) : 0;
+                        // For USD, remove '$' and parse directly.
+                        // Example: $19.90 -> 19.90
+                        const priceMatch = priceText.match(/\d+\.?\d*/); // Matches numbers with optional decimal
+                        let price = priceMatch ? parseFloat(priceMatch[0]) : 0;
                         
-                        // Convert to USD (Rate: 25,450)
-                        if (price > 0) {
-                            price = parseFloat((price / 25450).toFixed(2));
-                        } else {
-                            price = 29.90; // Default dummy price
+                        // Default dummy price if missing
+                        if (!price || price === 0) {
+                            price = 29.90;
                         }
 
                         // Description
@@ -130,17 +125,13 @@ const scrapeUniqlo = async () => {
                         
                         console.log(`Preparing to save: ${productData.name} | Price: ${productData.price} (Raw: ${productData.debugPriceText})`);
 
+                        // Save to database
+                        console.log(`Saving product: ${productData.name} ($${productData.price})`);
+
                         await prisma.product.create({
                             data: {
                                 name: productData.name,
-                                price: productData.price, // Store as is (VND is integer usually) 
-                                // Schema: price Decimal? @db.Decimal
-                                // Controller uses Number(price).
-                                // Let's store as is for now, but usually e-com uses cents. 
-                                // Wait, the controller getAllProducts does not divide by 100.
-                                // But ProductCard divides by 100: ${(product.price / 100).toFixed(2)}
-                                // So I should store * 100.
-                                
+                                price: productData.price,
                                 description: productData.description,
                                 stock: 100,
                                 category_name: category.toLowerCase(),
@@ -149,6 +140,7 @@ const scrapeUniqlo = async () => {
                                 featured: isFeatured,
                                 colors: productData.colors,
                                 sizes: ['S', 'M', 'L', 'XL'],
+                                product_url: fullLink, // Ensure product_url is saved
                             }
                         });
 

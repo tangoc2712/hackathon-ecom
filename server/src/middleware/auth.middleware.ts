@@ -8,33 +8,22 @@ interface RequestWithUser extends Request {
     user?: UserInterface;
 }
 
+import jwt from 'jsonwebtoken';
+
 export const authenticateUser = async (req: RequestWithUser, res: Response, next: NextFunction) => {
-    console.log(req.cookies.token)
-    const idToken = req.cookies.token; // Read token from cookies
-    if (!idToken) {
+    const token = req.cookies.token; // Read token from cookies
+    if (!token) {
         return res.status(401).json({ message: 'No token provided' });
     }
     
     try {
-        let uid;
-        if (idToken === "TEST_TOKEN") {
-             uid = "test_user_uid";
-        } else {
-            const decodedToken = await admin.auth().verifyIdToken(idToken);
-            uid = decodedToken.uid;
-        }
-
-        const user = await prisma.user.findUnique({ where: { uid } });
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret_key_change_me') as { user_id: string, role: string };
+        
+        const user = await prisma.user.findUnique({ where: { user_id: decoded.user_id } });
         if (!user) {
             return res.status(401).json({ message: 'User not found' });
         }
 
-        // Map Prisma User to UserInterface if needed, or update UserInterface to match Prisma User
-        // UserInterface has _id: any, which Prisma User doesn't have. 
-        // But UserInterface also has user_id: string.
-        // Prisma User has user_id, uid, email, etc.
-        // I need to cast or ensure compatibility.
-        // Let's cast it for now as we are migrating.
         req.user = user as unknown as UserInterface; 
         next();
     } catch (error) {

@@ -32,6 +32,7 @@ model User {
   embedding     Unsupported("vector")?
 
   orders        Order[]
+  reviews       ProductReview[]
 
   @@map("user")
   @@schema("public")
@@ -62,6 +63,7 @@ model Product {
   embedding       Unsupported("vector")?
 
   orderItems      OrderItem[]
+  reviews         ProductReview[]
 
   @@map("product")
   @@schema("public")
@@ -122,5 +124,22 @@ model Coupon {
   embedding     Unsupported("vector")?
 
   @@map("coupon")
+  @@schema("public")
+}
+
+model ProductReview {
+  product_review_id String    @id @default(uuid()) @db.Uuid
+  product_id        String?   @db.Uuid
+  user_id           String?   @db.Uuid
+  rating            Int?
+  comment           String?
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  embedding         Unsupported("vector")?
+
+  product Product? @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  user    User?    @relation(fields: [user_id], references: [user_id])
+
+  @@map("product_review")
   @@schema("public")
 }

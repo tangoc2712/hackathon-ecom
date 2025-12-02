@@ -22,11 +22,13 @@ export type UserLoginResponse = {
 }
 
 export type UserLoginRequest = {
-    idToken: string;
+    email: string;
+    password: string;
 }
 
 export type UserRegisterRequest = {
-    idToken: string;
+    email: string;
+    password: string;
     name: string;
     gender: string;
     dob: string

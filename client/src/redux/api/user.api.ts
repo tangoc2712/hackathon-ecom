@@ -16,17 +16,17 @@ export const userApi = createApi({
             query: (id: string) => `${id}`,
         }),
         loginUser: builder.mutation<UserLoginResponse, UserLoginRequest>({
-            query: ({ idToken }) => ({
+            query: ({ email, password }) => ({
                 url: 'login',
                 method: 'POST',
-                body: { idToken },
+                body: { email, password },
             }),
         }),
         signupUser: builder.mutation<UserLoginResponse, UserRegisterRequest>({
-            query: ({ idToken, name, gender, dob }) => ({
+            query: ({ email, password, name, gender, dob }) => ({
                 url: 'signup',
                 method: 'POST',
-                body: { idToken, name, gender, dob },
+                body: { email, password, name, gender, dob },
             }),
         }),
         getMe: builder.query<UserResponse, void>({
