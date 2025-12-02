@@ -1,6 +1,7 @@
 import React from 'react';
 import FeaturedSection from '../components/FeaturedSection';
 import PopularProducts from '../components/PopularProduct';
+import SuggestedProducts from '../components/SuggestedProducts';
 import { useLatestProductsQuery } from '../redux/api/product.api';
 import { Link } from 'react-router-dom';
 
@@ -39,6 +40,8 @@ const HomePage: React.FC = () => {
                     ))}
                 </div>
             </section>
+
+            <SuggestedProducts />
 
             <PopularProducts products={products} />
 

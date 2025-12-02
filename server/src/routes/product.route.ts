@@ -7,6 +7,8 @@ import {
     getFeaturedProducts,
     getLatestProducts,
     getProductDetails,
+    getRelatedProducts,
+    getSuggestedProducts,
     searchProducts,
     toggleFeaturedStatus,
     updateProduct
@@ -30,10 +32,12 @@ router.patch('/feature/:id', authenticateUser, adminOnly, toggleFeaturedStatus);
 // Public routes
 router.get('/all', getAllProducts);
 router.get('/featured', getFeaturedProducts);
+router.get('/suggested', getSuggestedProducts);
 router.get('/latest', getLatestProducts);
 router.get('/categories', getAllCategories);
 router.get('/search', searchProducts);
 router.get('/:id', getProductDetails);
+router.get('/:id/related', getRelatedProducts);
 
 
 export default router;

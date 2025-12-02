@@ -87,6 +87,14 @@ export const productApi = createApi({
             }),
             invalidatesTags: ['Product']
         }),
+        getRelatedProducts: builder.query<ProductResponse, string>({
+            query: (id) => `${id}/related`,
+            providesTags: ['Product']
+        }),
+        getSuggestedProducts: builder.query<ProductResponse, string>({
+            query: () => 'suggested',
+            providesTags: ['Product']
+        }),
     }),
 });
 
@@ -100,6 +108,8 @@ export const {
     useUpdateProductMutation,
     useDeleteProductMutation,
     useGetAllFeaturedProductsQuery,
-    useFeatureProductMutation
+    useFeatureProductMutation,
+    useGetRelatedProductsQuery,
+    useGetSuggestedProductsQuery
 } = productApi;
 

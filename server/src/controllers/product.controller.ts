@@ -290,3 +290,75 @@ export const getFeaturedProducts = asyncHandler(
         });
     }
 );
+
+export const getRelatedProducts = asyncHandler(
+    async (req: Request, res: Response, next) => {
+        const { id } = req.params;
+
+        try {
+            const product = await prisma.product.findUnique({
+                where: { product_id: id }
+            });
+
+            if (!product) {
+                return next(new ApiError(404, "Product not found"));
+            }
+
+            // Use raw query for vector similarity search
+            // Cast price to float to ensure JSON serialization works
+            const relatedProducts = await prisma.$queryRaw`
+                SELECT 
+                    product_id::text,
+                    name,
+                    price::float,
+                    photos,
+                    category_name,
+                    product_url,
+                    embedding OPERATOR(public.<=>) (SELECT embedding FROM public.product WHERE product_id = ${id}::uuid)::public.vector as distance 
+                FROM public.product
+                WHERE product_id != ${id}::uuid
+                ORDER BY distance ASC 
+                LIMIT 5;
+            `;
+
+            return res.status(200).json({
+                success: true,
+                products: relatedProducts
+            });
+        } catch (error: any) {
+            console.error("Error fetching related products:", error);
+            return next(new ApiError(500, `Internal Server Error fetching related products: ${error.message}`));
+        }
+    }
+);
+
+export const getSuggestedProducts = asyncHandler(
+    async (req: Request, res: Response, next) => {
+        // For now, return featured products as suggestions
+        // In the future, this can be personalized based on user history
+        const products = await prisma.product.findMany({
+            where: { featured: true },
+            take: 10
+        });
+
+        // If no featured products, return random products
+        if (products.length === 0) {
+            const randomProducts = await prisma.product.findMany({
+                take: 10,
+                orderBy: {
+                    created_at: 'desc' // or random if possible, but simple desc is fine for fallback
+                }
+            });
+            
+            return res.status(200).json({
+                success: true,
+                products: randomProducts
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            products
+        });
+    }
+);

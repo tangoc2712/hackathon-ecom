@@ -2,6 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import BackButton from '../components/common/BackBtn';
+import RelatedProducts from '../components/RelatedProducts';
 import { useProductDetailsQuery } from '../redux/api/product.api';
 import { addToCart, decrementCartItem, incrementCartItem } from '../redux/reducers/cart.reducer';
 import { RootState } from '../redux/store';
@@ -180,6 +181,7 @@ const SingleProduct: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <RelatedProducts productId={product.product_id} />
         </div>
     );
 };
