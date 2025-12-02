@@ -20,7 +20,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ products }) => {
           {/* Product Name */}
           <h3 className="text-xl font-bold mt-4">{product.name}</h3>
           {/* Product Price */}
-          <p className="text-lg font-semibold text-gray-800">${(product.price / 100).toFixed(2)}</p>
+          <p className="text-lg font-semibold text-gray-800">{product.currency || '$'} {Number(product.price).toFixed(2)}</p>
           {/* View Details Button */}
           <Link to={`/product/${product.product_id}`} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg text-center">
             View Details

@@ -40,7 +40,7 @@ const AdminAddProduct = lazy(() => import('./components/admin/AddProduct'));
 const AdminCoupons = lazy(() => import('./pages/admin/Coupons'));
 const AdminFeaturedProducts = lazy(() => import('./pages/admin/FeaturedProduct'));
 const AdminManageProduct = lazy(() => import('./components/admin/ManageProduct'));
-const AdminOrderDetails = lazy(() => import('./pages/admin/AdmiOrderDetails'));
+const AdminOrderDetails = lazy(() => import('./pages/admin/AdminOrderDetails'));
 const AdminLooker = lazy(() => import('./pages/admin/AdminLooker'));
 
 // Other pages

@@ -40,7 +40,7 @@ const AdminOrderDetails: React.FC = () => {
             <h1 className="text-3xl font-bold mb-6">Order Details</h1>
             <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-semibold mb-4">Order #{data?.order?.order_id}</h2>
-                <p className="mb-4"><strong>Customer:</strong> {data?.order?.user.full_name}</p>
+                <p className="mb-4"><strong>Customer:</strong> {data?.order?.user?.full_name || 'N/A'}</p>
                 <p className="mb-4"><strong>Amount:</strong> {data?.order?.currency} {data?.order?.order_total}</p>
                 <p className="mb-4"><strong>Status:</strong> {data?.order?.status}</p>
 
@@ -56,7 +56,7 @@ const AdminOrderDetails: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {data?.order.orderItems.map(item => (
+                            {data?.order?.orderItems?.map(item => (
                                 <tr key={item.order_item_id} className="hover:bg-gray-50">
                                     <td className="py-3 px-4 border-b border-gray-300 text-sm">
                                         <div className="flex items-center space-x-2">

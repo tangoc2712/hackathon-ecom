@@ -63,9 +63,9 @@ app.use('/api/v1/stats', statsRoutes);
 
 // Serve static files (should be placed after API routes)
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/build')));
+    app.use(express.static(path.join(__dirname, '../client/dist')));
     app.get('*', (req: Request, res: Response) => {
-        res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+        res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
     });
 } else if (process.env.NODE_ENV === 'development') {
     app.get('/', (req: Request, res: Response) => {
@@ -74,15 +74,17 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Error handling middleware
+// Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     winston.error(err.message, err);
-    res.status(err.status || 500).json({
+    const statusCode = err.statusCode || err.status || 500;
+    res.status(statusCode).json({
         success: false,
         message: err.message || 'Server Error',
     });
 });
 
-app.use(apiErrorMiddleware);
+// app.use(apiErrorMiddleware);
 
 // Start server
 app.listen(PORT, () => {

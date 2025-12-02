@@ -10,17 +10,21 @@ export const newOrder = asyncHandler(async (req: Request<{}, {}, NewOrderRequest
 
     const { orderItems, shippingInfo, discount, shippingCharges, subTotal, tax, total } = req.body;
 
-    if (!shippingCharges || !shippingInfo || !subTotal || !tax || !total) {
+    if (!shippingInfo || !orderItems || !orderItems.length || !subTotal || !tax || !total) {
         return next(new ApiError(400, 'Please fill all fields'));
     }
 
     const user = (req as RequestWithUser).user;
 
+    if (!user || !user.uid) {
+        return next(new ApiError(400, 'User ID missing'));
+    }
+
     const newOrder = await prisma.order.create({
         data: {
             user_id: user.uid, // Use Firebase UID
             shipping_info: shippingInfo,
-            discount: Number(discount),
+            discount: Number(discount || 0),
             shipping_charges: Number(shippingCharges),
             subtotal: Number(subTotal),
             tax: Number(tax),
