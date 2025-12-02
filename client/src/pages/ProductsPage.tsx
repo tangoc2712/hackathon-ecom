@@ -1,26 +1,36 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import ReactPaginate from 'react-paginate';
 import ProductCard from '../components/ProductCard';
-import { useAllProductsQuery } from '../redux/api/product.api';
+import { useSearchProductsQuery } from '../redux/api/product.api';
 import { Product } from '../types/api-types';
 
 const ProductsPage: React.FC = () => {
     const [page, setPage] = useState(1);
-    const limit = 8; // Number of items per page
 
-    const { data, isLoading, isError } = useAllProductsQuery({ page, limit });
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+    const category = searchParams.get('category') || '';
+
+    const { data, isLoading, isError } = useSearchProductsQuery({
+        page,
+        category: category || undefined,
+        search: ''
+    });
 
     const handlePageClick = (selectedItem: { selected: number }) => {
         setPage(selectedItem.selected + 1);
     };
 
     useEffect(() => {
-        // Fetch data whenever page changes
-    }, [page]);
+        setPage(1); // Reset to page 1 when category changes
+    }, [category]);
 
     return (
         <div className="container mx-auto px-4 py-8 min-h-[80vh]">
-            <h1 className="text-3xl font-bold text-center mb-8">All Products</h1>
+            <h1 className="text-3xl font-bold text-center mb-8">
+                {category ? `${category.charAt(0).toUpperCase() + category.slice(1)} Products` : 'All Products'}
+            </h1>
             <div className="w-full p-4">
                 {isLoading ? (
                     <p className="text-center text-lg">Loading...</p>
@@ -35,10 +45,10 @@ const ProductsPage: React.FC = () => {
                                 <ProductCard key={product.product_id} product={product} />
                             ))}
                         </div>
-                        {data && data.totalPages > 1 && (
+                        {data && data.totalPage > 1 && (
                             <div className="mt-8">
                                 <ReactPaginate
-                                    pageCount={data.totalPages}
+                                    pageCount={data.totalPage}
                                     pageRangeDisplayed={2}
                                     marginPagesDisplayed={2}
                                     onPageChange={handlePageClick}

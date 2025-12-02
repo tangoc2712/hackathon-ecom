@@ -11,7 +11,7 @@ export const getLatestProducts = asyncHandler(
 
         const products = await prisma.product.findMany({
             orderBy: { created_at: 'desc' },
-            take: 5
+            take: 8
         });
 
         return res.status(200).json({
@@ -177,7 +177,7 @@ export const searchProducts = asyncHandler(
     async (req: Request<{}, {}, {}, SearchProductsQuery>, res: Response, next) => {
         const { search, category, sort, price, page = '1' } = req.query;
 
-        const limit = Number(process.env.PRODUCTS_PER_PAGE) || 6;
+        const limit = Number(process.env.PRODUCTS_PER_PAGE) || 8;
         const skip = (Number(page) - 1) * limit;
 
         const where: any = {};
@@ -187,7 +187,7 @@ export const searchProducts = asyncHandler(
         }
 
         if (category) {
-            where.category_name = category;
+            where.category_name = { equals: category, mode: 'insensitive' };
         }
 
         if (price) {
@@ -334,31 +334,131 @@ export const getRelatedProducts = asyncHandler(
 
 export const getSuggestedProducts = asyncHandler(
     async (req: Request, res: Response, next) => {
-        // For now, return featured products as suggestions
-        // In the future, this can be personalized based on user history
-        const products = await prisma.product.findMany({
-            where: { featured: true },
-            take: 10
-        });
+        const { userId } = req.query;
 
-        // If no featured products, return random products
-        if (products.length === 0) {
-            const randomProducts = await prisma.product.findMany({
-                take: 10,
-                orderBy: {
-                    created_at: 'desc' // or random if possible, but simple desc is fine for fallback
+        try {
+            if (userId) {
+                // 1. Try to find suggestions based on order history
+                const userWithOrders = await prisma.user.findUnique({
+                    where: { user_id: String(userId) },
+                    include: {
+                        orders: {
+                            orderBy: { created_at: 'desc' },
+                            take: 3,
+                            include: {
+                                orderItems: {
+                                    take: 1
+                                }
+                            }
+                        }
+                    }
+                });
+
+                if (userWithOrders && userWithOrders.orders.length > 0) {
+                    // Get the most recent product purchased
+                    const lastOrder = userWithOrders.orders[0];
+                    if (lastOrder.orderItems.length > 0 && lastOrder.orderItems[0].product_id) {
+                        const lastProductId = lastOrder.orderItems[0].product_id;
+
+                        // Find products similar to the last purchased product
+                        const suggestedProducts: any[] = await prisma.$queryRaw`
+                            SELECT 
+                                p.product_id::text,
+                                p.name,
+                                p.price::float,
+                                p.photos,
+                                p.category_name,
+                                p.product_url,
+                                p.embedding OPERATOR(public.<=>) (SELECT embedding FROM public.product WHERE product_id = ${lastProductId}::uuid)::public.vector as distance 
+                            FROM public.product p
+                            WHERE p.product_id != ${lastProductId}::uuid AND p.embedding IS NOT NULL
+                            ORDER BY distance ASC 
+                            LIMIT 4;
+                        `;
+
+                        if (suggestedProducts.length > 0) {
+                            return res.status(200).json({
+                                success: true,
+                                source: 'order_history',
+                                products: suggestedProducts
+                            });
+                        }
+                    }
                 }
+
+                // 2. Fallback: Check if user has embedding (legacy/direct user vector approach)
+                // Check if user exists and has embedding using raw query since Prisma doesn't support selecting Unsupported types directly
+                const userHasEmbedding: any[] = await prisma.$queryRaw`
+                    SELECT 1 FROM public.user WHERE user_id = ${String(userId)}::uuid AND embedding IS NOT NULL
+                `;
+
+                // If user has embedding, use it for similarity search
+                if (userHasEmbedding.length > 0) {
+                    // Use raw query for vector similarity search based on user embedding
+                    const suggestedProducts: any[] = await prisma.$queryRaw`
+                        SELECT 
+                            p.product_id::text,
+                            p.name,
+                            p.price::float,
+                            p.photos,
+                            p.category_name,
+                            p.product_url,
+                            p.embedding OPERATOR(public.<=>) (SELECT embedding FROM public.user WHERE user_id = ${String(userId)}::uuid)::public.vector as distance 
+                        FROM public.product p
+                        WHERE p.embedding IS NOT NULL
+                        ORDER BY distance ASC 
+                        LIMIT 4;
+                    `;
+
+                    if (suggestedProducts.length > 0) {
+                        return res.status(200).json({
+                            success: true,
+                            source: 'user_embedding',
+                            products: suggestedProducts
+                        });
+                    }
+                }
+            }
+
+            // 3. Fallback: return featured products as suggestions
+            const products = await prisma.product.findMany({
+                where: { featured: true },
+                take: 4
             });
-            
+
+            // If no featured products, return random products (latest for now)
+            if (products.length === 0) {
+                const randomProducts = await prisma.product.findMany({
+                    take: 4,
+                    orderBy: {
+                        created_at: 'desc'
+                    }
+                });
+                
+                return res.status(200).json({
+                    success: true,
+                    source: 'latest',
+                    products: randomProducts
+                });
+            }
+
             return res.status(200).json({
                 success: true,
-                products: randomProducts
+                source: 'featured',
+                products
+            });
+
+        } catch (error: any) {
+            console.error("Error fetching suggested products:", error);
+            // Don't fail completely, try fallback if error was due to vector search issues
+             const products = await prisma.product.findMany({
+                where: { featured: true },
+                take: 4
+            });
+             return res.status(200).json({
+                success: true,
+                products
             });
         }
-
-        return res.status(200).json({
-            success: true,
-            products
-        });
     }
 );

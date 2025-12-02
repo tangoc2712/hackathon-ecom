@@ -9,9 +9,9 @@ const SuggestedProducts: React.FC = () => {
     if (isError || !data || !data.products || data.products.length === 0) return null;
 
     return (
-        <section className="container mx-auto px-4 mb-12">
+        <section className="container mx-auto my-8 p-4">
             <h2 className="text-2xl font-bold mb-6 text-black uppercase tracking-wide">Suggested For You</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6">
                 {data.products.map((product) => (
                     <ProductCard key={product.product_id} product={product} />
                 ))}
