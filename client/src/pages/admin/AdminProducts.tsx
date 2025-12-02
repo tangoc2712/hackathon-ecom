@@ -52,7 +52,7 @@ const AdminProducts: React.FC = () => {
       {
         Header: 'Price',
         accessor: 'price',
-        Cell: ({ row }: { row: Row<Product> }) => `${row.original.currency || '₹'} ${row.original.price}`,
+        Cell: ({ row }: { row: Row<Product> }) => `${row.original.currency || '$'} ${row.original.price}`,
       },
       {
         Header: 'Actions',

@@ -101,7 +101,7 @@ const SingleProduct: React.FC = () => {
                 {/* Product Details */}
                 <div className="flex-1 lg:max-w-md">
                     <h1 className="text-3xl font-bold text-black mb-2">{product.name}</h1>
-                    <p className="text-2xl font-bold text-black mb-6">{product.currency || '₹'} {Number(product.price).toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-black mb-6">{product.currency || '$'} {Number(product.price).toFixed(2)}</p>
 
                     {/* Description Short */}
                     <div className="mb-6 text-sm text-gray-700" dangerouslySetInnerHTML={{ __html: product.description.substring(0, 150) + '...' }} />
