@@ -124,11 +124,11 @@ export type FeatureProductRequest = {
 
 // Search Product
 export type SearchProductRequest = {
-    price: string;
+    price?: string;
     page: number;
-    category: string;
+    category?: string;
     search: string;
-    sort: string;
+    sort?: string;
 }
 
 export type SearchProductResponse = ProductResponse & {

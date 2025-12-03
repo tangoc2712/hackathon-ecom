@@ -4,6 +4,7 @@ import PopularProducts from '../components/PopularProduct';
 import SuggestedProducts from '../components/SuggestedProducts';
 import { useLatestProductsQuery } from '../redux/api/product.api';
 import { Link } from 'react-router-dom';
+import ChatComponent from '../components/ChatComponent';
 
 const HomePage: React.FC = () => {
     const { data: productData, isLoading: productLoading, isError: productError } = useLatestProductsQuery('');
@@ -26,6 +27,8 @@ const HomePage: React.FC = () => {
         <div className='min-h-screen flex flex-col items-center bg-white'>
 
             <FeaturedSection />
+
+            <ChatComponent />
 
             {/* Categories Section */}
             <section className="container mx-auto px-4 mb-12">

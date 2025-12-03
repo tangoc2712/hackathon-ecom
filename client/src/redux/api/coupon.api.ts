@@ -5,7 +5,7 @@ import { AllCouponsResponse, ApplyCouponRequest, ApplyCouponResponse, MessageRes
 export const couponApi = createApi({
     reducerPath: 'couponApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: `/api/v1/coupons/`,
+        baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/v1/coupons/`,
         credentials: 'include',
     }),
     endpoints: (builder) => ({

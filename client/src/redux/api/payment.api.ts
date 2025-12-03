@@ -13,7 +13,7 @@ export interface CreatePaymentIntentResponse {
 export const paymentApi = createApi({
   reducerPath: 'paymentApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `/api/v1/payments`,
+    baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/v1/payments`,
     credentials: 'include',
   }),
   endpoints: (builder) => ({

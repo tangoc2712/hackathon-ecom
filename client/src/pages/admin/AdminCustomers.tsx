@@ -21,7 +21,7 @@ const AdminCustomers: React.FC = () => {
             },
             {
                 Header: 'Name',
-                accessor: 'name',
+                accessor: 'full_name',
             },
             {
                 Header: 'Email',

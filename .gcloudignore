@@ -1,0 +1,29 @@
+# Node modules
+node_modules
+**/node_modules
+
+# Git
+.git
+.gitignore
+
+# Build output
+dist
+build
+
+# Environment files
+.env
+.env.*
+
+# Logs
+*.log
+
+# IDE
+.vscode
+.idea
+
+# Large files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4

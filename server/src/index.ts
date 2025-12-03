@@ -20,6 +20,7 @@ import orderRoutes from './routes/order.routes';
 import paymentRoutes from './routes/payment.routes';
 import productRoutes from './routes/product.route';
 import statsRoutes from './routes/stats.route';
+import chatRoutes from './routes/chat.routes';
 
 import { apiErrorMiddleware } from './utils/ApiError';
 import winston from 'winston';
@@ -74,6 +75,7 @@ app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/stats', statsRoutes);
+app.use('/api/v1/chat', chatRoutes);
 
 // Serve static files (should be placed after API routes)
 if (process.env.NODE_ENV === 'production') {

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Cell, Column, ColumnInstance, HeaderGroup, Row, useSortBy, useTable } from 'react-table';
 import Pagination from '../../components/common/Pagination'; // Assuming you have a Pagination component
 import SkeletonLoader from '../../components/common/SkeletonLoader';
-import { useDeleteProductMutation, useAllProductsQuery } from '../../redux/api/product.api';
+import { useAllProductsQuery } from '../../redux/api/product.api';
 import { CustomError, Product } from '../../types/api-types';
 import { notify } from '../../utils/util';
 
@@ -23,7 +23,7 @@ const AdminProducts: React.FC = () => {
   const [sortBy, setSortBy] = useState<{ id: string; desc: boolean }>({ id: '', desc: false });
 
   const { data: productsData, isLoading, isError, error, refetch } = useAllProductsQuery({ page, limit, sortBy });
-  const [deleteProduct] = useDeleteProductMutation();
+
 
   const products = useMemo(() => productsData?.products || [], [productsData]);
   const totalPages = productsData?.totalPages || 1;

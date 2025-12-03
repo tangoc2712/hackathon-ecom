@@ -1,15 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { UserLoginRequest, UserLoginResponse, UserRegisterRequest, UserResponse } from '../../types/api-types';
+import { AllUserResponse, UserLoginRequest, UserLoginResponse, UserRegisterRequest, UserResponse } from '../../types/api-types';
 
 export const userApi = createApi({
     reducerPath: 'userAPI',
     baseQuery: fetchBaseQuery({
-        baseUrl: `/api/v1/auth/`,
+        baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/v1/auth/`,
         credentials: 'include',
     }),
     tagTypes: ['User'],
     endpoints: (builder) => ({
-        getAllUsers: builder.query({
+        getAllUsers: builder.query<AllUserResponse, string>({
             query: () => 'all',
         }),
         getUser: builder.query({
