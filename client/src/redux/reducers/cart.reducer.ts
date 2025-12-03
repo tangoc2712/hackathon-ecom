@@ -71,7 +71,7 @@ export const cartReducer = createSlice({
         calculatePrice: (state) => {
             const subTotal = state.cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
             state.subTotal = subTotal;
-            state.shippingCharges = state.cartItems && state.cartItems.length > 0 ? 50 : 0;
+            state.shippingCharges = 0;
             state.tax = Math.round(0.18 * state.subTotal);
             state.total = state.subTotal + state.shippingCharges + state.tax - state.discount;
             // If the discount is greater than the total price, limit the discount to the total price

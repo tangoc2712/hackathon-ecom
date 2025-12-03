@@ -1,5 +1,5 @@
 export interface User {
-    uid: string;
+    user_id: string;
     full_name: string;
     dob: string;
     gender: string;
@@ -180,7 +180,7 @@ export type Order = {
     status: string;
     user: {
         full_name: string;
-        uid: string;
+        user_id: string;
     };
     order_id: string;
     currency: string;

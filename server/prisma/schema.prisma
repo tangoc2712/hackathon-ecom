@@ -82,9 +82,10 @@ model Order {
   tax              Decimal?  @default(0) @db.Decimal
   shipping_charges Decimal?  @default(0) @db.Decimal
   discount         Decimal?  @default(0) @db.Decimal
+
   embedding        Unsupported("vector")?
 
-  user             User?     @relation(fields: [user_id], references: [uid])
+  user             User?     @relation(fields: [user_id], references: [user_id])
   
   orderItems       OrderItem[]
 

@@ -17,7 +17,7 @@ import {
 export const productApi = createApi({
     reducerPath: 'productAPI',
     baseQuery: fetchBaseQuery({
-        baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/v1/products`,
+        baseUrl: '/api/v1/products',
         credentials: 'include',
     }),
     tagTypes: ['Product'],

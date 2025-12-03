@@ -25,6 +25,7 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const AuthPage = lazy(() => import('./pages/AuthPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const CheckoutForm = lazy(() => import('./components/CheckoutForm'));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
 // const Shipping = lazy(() => import('./pages/shipping'));
 const Shipping = lazy(() => import('./pages/Shipping'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
@@ -97,6 +98,7 @@ const App: React.FC = () => {
                                 </Route>
                                 <Route path="shipping" element={<Shipping />} />
                                 <Route path="checkout" element={<CheckoutForm />} />
+                                <Route path="order-success" element={<OrderSuccess />} />
                             </Route>
 
                             {/* Admin routes */}

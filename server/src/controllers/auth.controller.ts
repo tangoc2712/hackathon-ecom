@@ -76,7 +76,6 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
                 gender,
                 date_of_birth: dob ? new Date(dob) : undefined,
                 role: 'user',
-                uid: email, // Using email as uid for now to satisfy unique constraint if needed, or we can generate a UUID
                 provider: 'local'
             }
         });

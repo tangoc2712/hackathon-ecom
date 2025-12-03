@@ -1,28 +1,16 @@
-import {
-  Elements,
-  PaymentElement,
-  useElements,
-  useStripe
-} from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useNewOrderMutation } from '../redux/api/order.api';
-import { useCreatePaymentIntentMutation } from '../redux/api/payment.api';
+import { useCreateZaloPayOrderMutation } from '../redux/api/payment.api';
 import { resetCart } from '../redux/reducers/cart.reducer';
 import { RootState } from '../redux/store';
-import { NewOrderRequest } from '../types/api-types';
 import { notify } from '../utils/util';
+import { NewOrderRequest } from '../types/api-types';
 import BackButton from '../components/common/BackBtn';
-
-// Ensure the environment variable is set correctly
-const stripePromise = loadStripe(import.meta.env.VITE_PUBLISHABLE_KEY);
 
 // Define the CheckoutForm component
 const CheckoutForm: React.FC = () => {
-  const stripe = useStripe();
-  const elements = useElements();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -38,81 +26,55 @@ const CheckoutForm: React.FC = () => {
   } = useSelector((state: RootState) => state.cart);
 
   const [newOrder] = useNewOrderMutation();
+
+  const [createZaloPayOrder] = useCreateZaloPayOrderMutation();
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [paymentMethod, setPaymentMethod] = useState<'ZaloPay'>('ZaloPay');
 
   // Function to handle form submission
   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
-      notify('Stripe has not been properly initialized', 'error');
-      return;
-    }
+    if (paymentMethod === 'ZaloPay') {
+      setIsProcessing(true);
+      try {
+        const res = await createZaloPayOrder({
+          amount: Math.round(total * 25000), // Convert USD to VND (approx)
+          description: `Payment for order by ${user?.full_name || user?.displayName || user?.email}`,
+          items: cartItems.map(item => ({
+            itemid: item.productId,
+            itemname: item.name,
+            itemprice: Math.round(item.price),
+            itemquantity: item.quantity
+          })),
+          app_user: user?.user_id,
+          shippingInfo,
+          subTotal,
+          tax,
+          shippingCharges,
+          total,
+          orderItems: cartItems
+        }).unwrap();
 
-    if (!user) {
-      notify('Please login to place order', 'error');
-      return;
-    }
-
-    setIsProcessing(true);
-
-    const orderData: NewOrderRequest = {
-      shippingCharges,
-      shippingInfo,
-      tax,
-      discount,
-      total,
-      subTotal,
-      orderItems: cartItems,
-      userId: user?.uid,
-    };
-
-    try {
-      const res = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: window.location.origin
-        },
-        redirect: 'if_required'
-      });
-
-      if (res.error) {
-        throw new Error(res.error.message);
-      }
-
-      // Uncomment the following lines once your Stripe account is activated
-      // if (res.paymentIntent?.status === "succeeded") {
-      //     const orderResponse = await newOrder(orderData);
-      //     if (orderResponse.error) {
-      //         throw new Error(orderResponse.error.message);
-      //     }
-      //     dispatch(resetCart());
-      //     notify('Order placed successfully', 'success');
-      //     navigate("/orders");
-      // }
-
-    } catch (error: any) {
-      console.error(error);
-      notify(error.message, 'error');
-    } finally {
-      // Comment out the following lines once your Stripe account is activated
-      const orderResponse = await newOrder(orderData);
-      console.log(orderResponse, "orderResponse");
-      if (orderResponse.error) {
-        notify(`${orderResponse.error! || 'Failed to place order'}` as string, 'error');
-        setIsProcessing(false);
-      } else {
-        dispatch(resetCart());
-        notify('Order placed successfully', 'success');
-        navigate("/my-orders");
+        if (res.returncode === 1) {
+          // Redirect to ZaloPay
+          window.location.href = res.orderurl;
+        } else {
+          console.error("ZaloPay Error Response:", res);
+          notify(`ZaloPay Error: ${res.returnmessage} (${res.returncode})`, 'error');
+          setIsProcessing(false);
+        }
+      } catch (error: any) {
+        console.error("ZaloPay Request Error:", error);
+        notify(error?.data?.message || error.message || 'ZaloPay Connection Error', 'error');
         setIsProcessing(false);
       }
+      return;
     }
   };
 
   return (
     <>
-
       <div className="checkout-container flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
 
         <div className="w-full max-w-lg m-4">
@@ -126,13 +88,41 @@ const CheckoutForm: React.FC = () => {
           <div className="text-lg mb-4">
             <p>Total Amount: {cartItems.length > 0 ? cartItems[0].currency : '$'} {total.toFixed(2)}</p>
           </div>
-          <PaymentElement className="mb-4" />
-          <button type="submit" disabled={isProcessing} className="bg-blue-500 text-white px-4 py-2 rounded-lg w-full">
-            {isProcessing ? "Processing..." : `Pay ${cartItems.length > 0 ? cartItems[0].currency : '$'} ${total.toFixed(2)}`}
+
+          <div className="mb-6">
+            <label className="block mb-2 font-semibold">Select Payment Method:</label>
+            <div className="flex flex-col space-y-4">
+              <label className={`cursor-pointer px-4 py-4 rounded border flex items-center justify-between ${paymentMethod === 'ZaloPay' ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500' : 'border-gray-300 hover:bg-gray-50'}`}>
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    value="ZaloPay"
+                    checked={paymentMethod === 'ZaloPay'}
+                    onChange={() => setPaymentMethod('ZaloPay')}
+                    className="mr-3 h-4 w-4 text-blue-600"
+                  />
+                  <span className="font-semibold text-lg">ZaloPay Wallet</span>
+                </div>
+                <img
+                  src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Logo-ZaloPay-Square.png"
+                  alt="ZaloPay Logo"
+                  className="h-10 w-10 object-contain"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="text-center mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <p className="text-blue-800">You will be redirected to ZaloPay Gateway to complete your payment securely.</p>
+          </div>
+
+          <button type="submit" disabled={isProcessing} className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-3 rounded-lg w-full transition duration-200">
+            {isProcessing ? "Processing..." : `Pay with ZaloPay`}
           </button>
+
           <button
             type="button"
-            className="bg-green-500 text-white px-4 py-2 rounded-lg w-full mt-4"
+            className="bg-green-500 hover:bg-green-600 text-white font-bold px-4 py-3 rounded-lg w-full mt-4 transition duration-200"
             onClick={async () => {
               setIsProcessing(true);
               const orderData: NewOrderRequest = {
@@ -143,7 +133,7 @@ const CheckoutForm: React.FC = () => {
                 total,
                 subTotal,
                 orderItems: cartItems,
-                userId: user?.uid,
+                userId: user?.user_id,
               };
               try {
                 const orderResponse = await newOrder(orderData);
@@ -154,7 +144,7 @@ const CheckoutForm: React.FC = () => {
                   setTimeout(() => {
                     dispatch(resetCart());
                   }, 1000);
-                  notify('Order placed successfully (Test)', 'success');
+                  notify('Order placed successfully (Bypass)', 'success');
                 }
               } catch (e: any) {
                 notify(e.message, 'error');
@@ -163,56 +153,16 @@ const CheckoutForm: React.FC = () => {
               }
             }}
           >
-            Test Pay (Bypass Stripe)
+            Test Pay (Bypass ZaloPay)
           </button>
         </form>
 
-        <div className="text-center mt-4">
-          <p>Powered by <a href="https://stripe.com" target="_blank" rel="noreferrer" className="text-blue-500">Stripe</a></p>
+        <div className="text-center mt-4 text-gray-500 text-sm">
+          <p>Secure Payment by ZaloPay</p>
         </div>
       </div>
     </>
   );
 };
 
-// Define the Checkout component
-const Checkout: React.FC = () => {
-  const navigate = useNavigate();
-  const { total } = useSelector((state: RootState) => state.cart);
-  const [createPaymentIntent] = useCreatePaymentIntentMutation();
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetchPaymentIntent = async () => {
-      try {
-        const data = await createPaymentIntent({ amount: total }).unwrap();
-        setClientSecret(data.client_secret);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to create payment intent", error);
-        // notify("Failed to create payment intent", "error");
-        navigate('/cart');
-      }
-    };
-
-    fetchPaymentIntent();
-  }, [createPaymentIntent, total, navigate]);
-
-  if (loading) {
-    return <p>Loading...</p>;
-  }
-
-  if (!clientSecret) {
-    console.log('Client secret not found');
-    return <Navigate to="/cart" />;
-  }
-
-  return (
-    <Elements stripe={stripePromise} options={{ clientSecret }}>
-      <CheckoutForm />
-    </Elements>
-  );
-};
-
-export default Checkout;
+export default CheckoutForm;

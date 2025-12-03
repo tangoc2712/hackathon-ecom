@@ -10,23 +10,54 @@ export interface CreatePaymentIntentResponse {
   message: string;
 }
 
+import { CartItem, ShippingInfo } from '../../types/api-types';
+
+export interface CreateZaloPayOrderRequest {
+  amount: number;
+  description: string;
+  items: any[];
+  app_user?: string;
+  shippingInfo: ShippingInfo;
+  subTotal: number;
+  tax: number;
+  shippingCharges: number;
+  total: number;
+  orderItems: CartItem[];
+}
+
+export interface CreateZaloPayOrderResponse {
+  returncode: number;
+  returnmessage: string;
+  orderurl: string;
+  zptranstoken: string;
+}
+
 export const paymentApi = createApi({
   reducerPath: 'paymentApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/v1/payments`,
+    baseUrl: '/api/v1/payments',
     credentials: 'include',
   }),
   endpoints: (builder) => ({
-    createPaymentIntent: builder.mutation<CreatePaymentIntentResponse, CreatePaymentIntentRequest>({
-      query: (paymentIntent) => ({
-        url: 'new',
+    // createPaymentIntent removed
+    createZaloPayOrder: builder.mutation<CreateZaloPayOrderResponse, CreateZaloPayOrderRequest>({
+      query: (orderData) => ({
+        url: 'zalopay/create',
         method: 'POST',
-        body: paymentIntent,
+        body: orderData,
+      }),
+    }),
+    checkZaloPayStatus: builder.mutation<{ returncode: number, returnmessage: string }, { orderId: string }>({
+      query: (data) => ({
+        url: 'zalopay/check-status',
+        method: 'POST',
+        body: data,
       }),
     }),
   }),
 });
 
 export const {
-  useCreatePaymentIntentMutation,
+  useCreateZaloPayOrderMutation,
+  useCheckZaloPayStatusMutation,
 } = paymentApi;

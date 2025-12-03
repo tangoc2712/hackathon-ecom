@@ -16,13 +16,13 @@ export const newOrder = asyncHandler(async (req: Request<{}, {}, NewOrderRequest
 
     const user = (req as RequestWithUser).user;
 
-    if (!user || !user.uid) {
+    if (!user || !user.user_id) {
         return next(new ApiError(400, 'User ID missing'));
     }
 
     const newOrder = await prisma.order.create({
         data: {
-            user_id: user.uid, // Use Firebase UID
+            user_id: user.user_id,
             shipping_info: shippingInfo,
             discount: Number(discount || 0),
             shipping_charges: Number(shippingCharges),
@@ -100,7 +100,7 @@ export const getUserOrders = asyncHandler(async (req: Request, res: Response, ne
     const user = (req as RequestWithUser).user;
 
     const orders = await prisma.order.findMany({
-        where: { user_id: user.uid },
+        where: { user_id: user.user_id },
         include: { user: true }
     });
 

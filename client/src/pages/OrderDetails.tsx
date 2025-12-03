@@ -2,10 +2,13 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import BackButton from '../components/common/BackBtn';
 import { useOrderDetailsQuery } from '../redux/api/order.api';
+import { useCheckZaloPayStatusMutation } from '../redux/api/payment.api';
+import { notify } from '../utils/util';
 
 const OrderDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const { data, isLoading, isError } = useOrderDetailsQuery(id!);
+    const { data, isLoading, isError, refetch } = useOrderDetailsQuery(id!);
+    const [checkStatus, { isLoading: isChecking }] = useCheckZaloPayStatusMutation();
 
     if (isLoading) {
         return <p className="text-center text-lg">Loading...</p>;
@@ -26,6 +29,27 @@ const OrderDetails: React.FC = () => {
                 <h3 className="text-xl font-semibold mb-2">Order ID: {order.order_id}</h3>
                 <p>Status: <span className="font-medium">{order.status}</span></p>
                 <p>Placed on: <span className="font-medium">{new Date(order.created_at).toLocaleDateString()}</span></p>
+                {order.status === 'Pending Payment' && (
+                    <button
+                        onClick={async () => {
+                            try {
+                                const res = await checkStatus({ orderId: order.order_id }).unwrap();
+                                if (res.returncode === 1) {
+                                    notify('Payment confirmed! Order updated.', 'success');
+                                    refetch();
+                                } else {
+                                    notify(`Payment status: ${res.returnmessage}`, 'info');
+                                }
+                            } catch (error: any) {
+                                notify(error?.data?.message || 'Failed to check status', 'error');
+                            }
+                        }}
+                        disabled={isChecking}
+                        className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+                    >
+                        {isChecking ? 'Checking...' : 'Check Payment Status (ZaloPay)'}
+                    </button>
+                )}
             </div>
             <div className="mb-6">
                 <h3 className="text-xl font-semibold mb-2">Shipping Information</h3>

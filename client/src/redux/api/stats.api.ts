@@ -6,7 +6,7 @@ import { StatsResponse } from '../../types/api-types';
 export const statsApi = createApi({
     reducerPath: 'statsApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/v1/stats/`,
+        baseUrl: '/api/v1/stats/',
         credentials: 'include',
     }),
     endpoints: (builder) => ({

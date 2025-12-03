@@ -16,7 +16,7 @@ const ChatWidget: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = '/api/v1';
     const [sessionId, setSessionId] = useState<string>('');
 
     useEffect(() => {

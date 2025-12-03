@@ -4,7 +4,7 @@ import { AllUserResponse, UserLoginRequest, UserLoginResponse, UserRegisterReque
 export const userApi = createApi({
     reducerPath: 'userAPI',
     baseQuery: fetchBaseQuery({
-        baseUrl: `${import.meta.env.VITE_SERVER_URL}/api/v1/auth/`,
+        baseUrl: '/api/v1/auth/',
         credentials: 'include',
     }),
     tagTypes: ['User'],
