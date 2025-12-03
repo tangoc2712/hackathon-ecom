@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { FaPaperPlane } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import ReactMarkdown from 'react-markdown';
 
 interface Message {
     sender: 'user' | 'bot';
@@ -11,7 +14,8 @@ interface Message {
 const ChatComponent: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
-    const [role] = useState<'user' | 'admin'>('user');
+    const { user } = useSelector((state: RootState) => state.user);
+    const [sessionId, setSessionId] = useState<string | null>(localStorage.getItem('chat_session_id'));
     const [loading, setLoading] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -38,16 +42,32 @@ const ChatComponent: React.FC = () => {
         setLoading(true);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_SERVER}/api/v1/chat/message`, {
-                message: userMessage,
-                role: role
-            });
+            const customerId = user ? user.user_id : undefined;
 
-            const botResponse = response.data;
+            const payload: any = {
+                message: userMessage,
+                session_id: sessionId
+            };
+
+            if (customerId) {
+                payload.customer_id = customerId;
+            }
+
+            // Use the proxy endpoint /chat/message which forwards to localhost:8000
+            const response = await axios.post('/chat/message', payload);
+
+            const data = response.data;
+
+            // Update session ID if returned and not already set
+            if (data.session_id) {
+                setSessionId(data.session_id);
+                localStorage.setItem('chat_session_id', data.session_id);
+            }
+
             setMessages(prev => [...prev, {
                 sender: 'bot',
-                text: botResponse.message,
-                data: botResponse.data
+                text: data.response,
+                data: data.debug_info?.data_accessed ? [] : undefined // The API returns debug_info, we might want to parse it or just show the text response
             }]);
         } catch (error) {
             console.error("Chat error:", error);
@@ -110,7 +130,13 @@ const ChatComponent: React.FC = () => {
                         {messages.map((msg, index) => (
                             <div key={index} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[80%] rounded-lg p-3 ${msg.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-800 shadow-sm'}`}>
-                                    <p>{msg.text}</p>
+                                    {msg.sender === 'user' ? (
+                                        <p>{msg.text}</p>
+                                    ) : (
+                                        <div className="prose prose-sm max-w-none">
+                                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                        </div>
+                                    )}
                                     {/* Render Data if available */}
                                     {msg.data && msg.data.length > 0 && (
                                         <div className="mt-2 space-y-2">
