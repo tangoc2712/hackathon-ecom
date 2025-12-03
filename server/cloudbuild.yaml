@@ -45,6 +45,10 @@ steps:
       - '10'
       - '--set-env-vars'
       - 'NODE_ENV=production'
+      - '--port'
+      - '8080'
+      - '--startup-cpu-boost'  # Enable CPU boost during startup
+      - '--no-cpu-throttling'  # Don't throttle CPU
 
 # Store images in Google Container Registry
 images:

@@ -28,7 +28,7 @@ firebaseApp.firestore();
 
 const app: Application = express();
 
-const PORT = process.env.PORT || 8000;
+const PORT = Number(process.env.PORT) || 8080;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 // connectDB(); // Removed Mongoose connection
@@ -52,6 +52,20 @@ const limiter = rateLimit({
     legacyHeaders: false,
 });
 app.use('/api', limiter);
+
+// Health check endpoint for Cloud Run
+app.get('/health', (req: Request, res: Response) => {
+    res.status(200).json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// Root endpoint
+app.get('/', (req: Request, res: Response) => {
+    res.status(200).json({
+        message: 'API is running 🚀',
+        environment: process.env.NODE_ENV,
+        port: PORT
+    });
+});
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
@@ -87,6 +101,35 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 // app.use(apiErrorMiddleware);
 
 // Start server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+console.log('🚀 Starting server...');
+console.log(`📍 Environment: ${process.env.NODE_ENV}`);
+console.log(`🌐 Port: ${PORT}`);
+console.log(`🔗 Client URL: ${CLIENT_URL}`);
+
+// CRITICAL: Bind to 0.0.0.0 to accept connections from Cloud Run
+// Cloud Run requires binding to all network interfaces, not just localhost
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`✅ Server listening on 0.0.0.0:${PORT}`);
+    console.log(`✅ Server is ready to accept connections`);
+    console.log(`🏥 Health check available at: /health`);
+});
+
+// Handle server errors
+server.on('error', (error: any) => {
+    if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use`);
+    } else {
+        console.error('❌ Server error:', error);
+    }
+    process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('🛑 SIGTERM received, shutting down gracefully...');
+    server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+    });
 });
