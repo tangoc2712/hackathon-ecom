@@ -66,8 +66,8 @@ const App: React.FC = () => {
             dispatch(userExists(data.user));
         } else if (error) {
             // No logged-in user - create/use anonymous user (session-only)
-            const anonymousUserId = getOrCreateAnonymousUserId();
-            dispatch(setAnonymousUser(anonymousUserId));
+            getOrCreateAnonymousUserId(); // Create/get anonymous user ID (stored in sessionStorage)
+            dispatch(setAnonymousUser());
         }
     }, [data, error, dispatch]);
 
