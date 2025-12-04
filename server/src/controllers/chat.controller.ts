@@ -1,81 +1,204 @@
 import { Request, Response, NextFunction } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
-import prisma from "../config/prisma";
 import { ApiError } from "../utils/ApiError";
+import { ragService } from "../services/rag.service";
 
-export const processMessage = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    const { message, role } = req.body;
+/**
+ * Chat API Controller
+ * 
+ * Follows the API_GUIDE.md specification:
+ * - POST /chat/message - Send message to RAG service
+ * - GET /chat/history/:sessionId - Get session history
+ * - GET /chat/history/customer/:customerId - Get customer history
+ * - DELETE /chat/history/:sessionId - Delete session history
+ * 
+ * Role Logic (for calls from home page):
+ * - If user is logged in (admin or user role): send customer_id to RAG service
+ *   RAG service will look up the role from database and apply appropriate access
+ * - If visitor (no user): don't send customer_id, RAG uses visitor mode
+ *   (products + reviews only)
+ */
+
+interface RequestWithUser extends Request {
+    user?: {
+        user_id: string;
+        role: string;
+    };
+}
+
+/**
+ * Process a chat message
+ * Endpoint: POST /api/v1/chat/message
+ * 
+ * Request body:
+ * - message: string (required) - User's question
+ * - session_id?: string (optional) - Session ID for conversation tracking
+ * - customer_id?: string (optional) - User ID (if logged in)
+ * 
+ * For home page usage:
+ * - Logged in user (admin/user): pass customer_id, RAG determines role from DB
+ * - Visitor: don't pass customer_id, uses visitor mode (products/reviews only)
+ */
+export const processMessage = asyncHandler(async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    const { message, session_id, customer_id } = req.body;
 
     if (!message) {
         return next(new ApiError(400, "Message is required"));
     }
 
-    const userRole = role || 'admin'; // Default to admin/privileged if not specified
-    const lowerMessage = message.toLowerCase();
+    try {
+        // Build payload following API_GUIDE.md format
+        const payload: {
+            message: string;
+            session_id?: string;
+            customer_id?: string;
+        } = {
+            message
+        };
 
-    // User Role Logic
-    if (userRole === 'user') {
-        // Deny access to orders
-        if (lowerMessage.includes('order')) {
-             return res.status(200).json({
-                success: true,
-                message: "I can't access order data",
-                data: []
-            });
+        // Add session_id if provided
+        if (session_id) {
+            payload.session_id = session_id;
         }
 
-        // Allow access to products
-        // Simple keyword extraction for demo purposes
-        // "Show me red t-shirts" -> looks for "red" and "t-shirt"
-        const searchTerms = [];
-        if (lowerMessage.includes('red')) searchTerms.push({ name: { contains: 'red', mode: 'insensitive' } });
-        if (lowerMessage.includes('t-shirt')) searchTerms.push({ name: { contains: 't-shirt', mode: 'insensitive' } });
-        if (lowerMessage.includes('blue')) searchTerms.push({ name: { contains: 'blue', mode: 'insensitive' } });
-        if (lowerMessage.includes('shirt') && !lowerMessage.includes('t-shirt')) searchTerms.push({ name: { contains: 'shirt', mode: 'insensitive' } });
+        // Add customer_id if provided (allows RAG to determine role from DB)
+        // For home page: logged in users (admin/user) should pass customer_id
+        // Visitors don't pass customer_id and get visitor mode (products/reviews only)
+        if (customer_id) {
+            payload.customer_id = customer_id;
+        }
+
+        // Call RAG service
+        const ragResponse = await ragService.sendMessage(payload);
+
+        // Return response in the format expected by frontend
+        return res.status(200).json({
+            success: true,
+            response: ragResponse.response,
+            session_id: ragResponse.session_id,
+            timestamp: ragResponse.timestamp,
+            debug_info: ragResponse.debug_info
+        });
+    } catch (error: any) {
+        console.error("Chat API error:", error.message);
         
-        if (searchTerms.length > 0 || lowerMessage.includes('product')) {
-             const whereClause: any = {};
-             if (searchTerms.length > 0) {
-                 whereClause.AND = searchTerms;
-             }
-
-             const products = await prisma.product.findMany({
-                 where: whereClause,
-                 take: 5
-             });
-
-            return res.status(200).json({
-                success: true,
-                message: `Found ${products.length} products`,
-                data: products
-            });
+        // Handle specific error cases
+        if (error.response) {
+            const status = error.response.status;
+            const errorDetail = error.response.data?.detail || "RAG service error";
+            
+            if (status === 503) {
+                return next(new ApiError(503, "Chat service is temporarily unavailable. Please try again later."));
+            }
+            
+            return next(new ApiError(status, errorDetail));
         }
         
-        // Default fallback for user
-        return res.status(200).json({
-            success: true,
-            message: "I can help you find products. Try asking for 'red t-shirts'.",
-            data: []
-        });
+        // Network or timeout error
+        if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+            return next(new ApiError(503, "Chat service is not available. Please try again later."));
+        }
+        
+        if (error.code === 'ECONNABORTED') {
+            return next(new ApiError(504, "Chat service request timed out. Please try again."));
+        }
+
+        return next(new ApiError(500, "An error occurred while processing your message."));
+    }
+});
+
+/**
+ * Get chat history for a session
+ * Endpoint: GET /api/v1/chat/history/:sessionId
+ */
+export const getSessionHistory = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { sessionId } = req.params;
+    const limit = Number(req.query.limit) || 50;
+
+    if (!sessionId) {
+        return next(new ApiError(400, "Session ID is required"));
     }
 
-    // Admin/Default Role Logic
-    if (lowerMessage.includes('order')) {
-        const orders = await prisma.order.findMany({
-            take: 5,
-            orderBy: { created_at: 'desc' },
-            include: { user: true }
-        });
+    try {
+        const historyResponse = await ragService.getSessionHistory(sessionId, limit);
+        
         return res.status(200).json({
             success: true,
-            message: "Here are the recent orders",
-            data: orders
+            history: historyResponse.history
         });
+    } catch (error: any) {
+        console.error("Get session history error:", error.message);
+        return next(new ApiError(500, "Failed to retrieve chat history"));
+    }
+});
+
+/**
+ * Get chat history for a customer across all sessions
+ * Endpoint: GET /api/v1/chat/history/customer/:customerId
+ */
+export const getCustomerHistory = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { customerId } = req.params;
+    const limit = Number(req.query.limit) || 100;
+
+    if (!customerId) {
+        return next(new ApiError(400, "Customer ID is required"));
     }
 
-    return res.status(200).json({
-        success: true,
-        message: "I can help you with orders. Try asking 'Show me recent orders'.",
-        data: []
-    });
+    try {
+        const historyResponse = await ragService.getCustomerHistory(customerId, limit);
+        
+        return res.status(200).json({
+            success: true,
+            history: historyResponse.history
+        });
+    } catch (error: any) {
+        console.error("Get customer history error:", error.message);
+        return next(new ApiError(500, "Failed to retrieve customer chat history"));
+    }
+});
+
+/**
+ * Delete chat history for a session
+ * Endpoint: DELETE /api/v1/chat/history/:sessionId
+ */
+export const deleteSessionHistory = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    const { sessionId } = req.params;
+
+    if (!sessionId) {
+        return next(new ApiError(400, "Session ID is required"));
+    }
+
+    try {
+        const deleteResponse = await ragService.deleteSessionHistory(sessionId);
+        
+        return res.status(200).json({
+            success: true,
+            message: deleteResponse.message
+        });
+    } catch (error: any) {
+        console.error("Delete session history error:", error.message);
+        return next(new ApiError(500, "Failed to delete chat history"));
+    }
+});
+
+/**
+ * Check RAG service health
+ * Endpoint: GET /api/v1/chat/health
+ */
+export const checkHealth = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const healthResponse = await ragService.checkHealth();
+        
+        return res.status(200).json({
+            success: true,
+            status: healthResponse.status
+        });
+    } catch (error: any) {
+        console.error("RAG service health check failed:", error.message);
+        return res.status(503).json({
+            success: false,
+            status: "unhealthy",
+            message: "RAG service is not available"
+        });
+    }
 });

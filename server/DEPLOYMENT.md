@@ -81,14 +81,15 @@ export REGION=asia-southeast1
 # Deploy using gcloud
 gcloud run deploy hackathon-ecom-server \
   --source . \
-  --region=$REGION \
+  --project hackathon-478514 \
+  --region asia-southeast1 \
   --platform=managed \
   --allow-unauthenticated \
   --memory=512Mi \
   --cpu=1 \
   --timeout=300 \
   --max-instances=10 \
-  --set-env-vars="NODE_ENV=production"
+  --set-env-vars="NODE_ENV=production,DATABASE_URL=postgresql://postgres:Huypn456785%401@localhost/postgres?host=/cloudsql/hackathon-478514:asia-southeast1:ndsv-db&schema=public,JWT_SECRET=your-jwt-secret,CLIENT_URL=https://hackathon-478514.web.app,CLOUDINARY_CLOUD_NAME=dummy,CLOUDINARY_API_KEY=dummy,CLOUDINARY_API_SECRET=dummy,STRIPE_SECRET_KEY=your-stripe-key,STRIPE_WEBHOOK_SECRET=your-webhook-secret,ZALO_APP_ID=553,ZALO_KEY1=9phuAOYhan4urywHTh0ndEXiV3pKHr5Q,ZALO_KEY2=Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3,ZALO_ENDPOINT=https://sandbox.zalopay.com.vn/v001/tpe/createorder"
 ```
 
 #### Step 3: Set Environment Variables
@@ -99,7 +100,7 @@ After initial deployment, configure secrets:
 # Update service with environment variables
 gcloud run services update hackathon-ecom-server \
   --region=$REGION \
-  --set-env-vars="DATABASE_URL=your-database-url,JWT_SECRET=your-jwt-secret,CLIENT_URL=https://your-frontend-url.com,CLOUDINARY_CLOUD_NAME=your-cloud-name,CLOUDINARY_API_KEY=your-api-key,CLOUDINARY_API_SECRET=your-api-secret,STRIPE_SECRET_KEY=your-stripe-key,STRIPE_WEBHOOK_SECRET=your-webhook-secret"
+  --set-env-vars="DATABASE_URL=postgresql://postgres:Huypn456785%401@localhost/postgres?host=/cloudsql/hackathon-478514:asia-southeast1:ndsv-db&schema=public,JWT_SECRET=your-jwt-secret,CLIENT_URL=https://hackathon-478514.web.app,CLOUDINARY_CLOUD_NAME=dummy,CLOUDINARY_API_KEY=dummy,CLOUDINARY_API_SECRET=dummy,STRIPE_SECRET_KEY=your-stripe-key,STRIPE_WEBHOOK_SECRET=your-webhook-secret,ZALO_APP_ID=553,ZALO_KEY1=9phuAOYhan4urywHTh0ndEXiV3pKHr5Q,ZALO_KEY2=Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3,ZALO_ENDPOINT=https://sandbox.zalopay.com.vn/v001/tpe/createorder"
 ```
 
 > [!TIP]
