@@ -12,14 +12,16 @@ const createAdmin = async () => {
         const user = await prisma.user.upsert({
             where: { email },
             update: {
-                role: 'admin',
+                role: 'Admin',
+                role_id: 1,
                 password_hash: hashedPassword, // Ensure password is set even if user exists
             },
             create: {
                 email,
                 password_hash: hashedPassword,
                 full_name: 'Admin User',
-                role: 'admin',
+                role: 'Admin',
+                role_id: 1,
                 uid: 'admin_uid_' + Date.now(),
                 provider: 'local',
                 gender: 'other',

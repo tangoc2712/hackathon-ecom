@@ -1,4 +1,8 @@
 export interface User {
+    role_id: number;
+    country: string;
+    city: string;
+    date_of_birth: string | number | Date;
     user_id: string;
     full_name: string;
     dob: string;
@@ -8,7 +12,7 @@ export interface User {
     photoURL: string;
     provider: string;
     _id: string;
-    role: "admin" | "user";
+    role: string;
 }
 export type MessageResponse = {
     success: boolean;
@@ -68,6 +72,16 @@ export interface Product {
     createdAt: string;
     updatedAt: string;
 }
+export interface ProductRating {
+    created_at: string;
+    product_review_id: string;
+    product_id: string;
+    rating: number;
+    title: string;
+    comment: string;
+    createdAt: string;
+    updatedAt: string;
+}
 
 export interface ProductResponse {
     success: boolean;
@@ -77,6 +91,13 @@ export interface ProductResponse {
     currentPage: number;
 }
 
+export interface ProductRatingResponse {
+    success: boolean;
+    productRatings: ProductRating[];
+    totalProducts: number;
+    totalPages: number;
+    currentPage: number;
+}
 
 interface SortBy {
     id: string;

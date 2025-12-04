@@ -13,7 +13,7 @@ const OrderSuccess: React.FC = () => {
     const amount = searchParams.get('amount');
 
     useEffect(() => {
-        if (status === '1') {
+        if (status === 1) {
             dispatch(resetCart());
         }
     }, [status, dispatch]);
@@ -21,7 +21,7 @@ const OrderSuccess: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
             <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
-                {status === '1' ? (
+                {status === 1 ? (
                     <>
                         <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4" />
                         <h1 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h1>

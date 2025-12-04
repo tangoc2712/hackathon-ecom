@@ -50,8 +50,8 @@ export class RagService {
      * Send a chat message to the RAG service
      * The RAG service automatically determines user role based on customer_id:
      * - No customer_id → Visitor mode (products + reviews only)
-     * - customer_id with role='user' in DB → User mode (own orders + products/reviews)
-     * - customer_id with role='admin' in DB → Admin mode (full access)
+     * - customer_id with role_id != 1 in DB → User mode (own orders + products/reviews)
+     * - customer_id with role_id = 1 in DB → Admin mode (full access)
      */
     async sendMessage(payload: ChatMessagePayload): Promise<ChatMessageResponse> {
         try {

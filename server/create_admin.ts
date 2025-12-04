@@ -16,14 +16,16 @@ async function createAdmin() {
       where: { email },
       update: {
         password_hash: hashedPassword,
-        role: 'admin',
+        role: 'Admin',
+        role_id: 1,
         full_name: name
       },
       create: {
         email,
         password_hash: hashedPassword,
         full_name: name,
-        role: 'admin',
+        role: 'Admin',
+        role_id: 1,
         uid: email, // Using email as uid for simplicity
         provider: 'local',
         gender: 'male', // Default

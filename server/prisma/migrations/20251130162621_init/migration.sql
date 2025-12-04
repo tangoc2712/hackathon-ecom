@@ -18,6 +18,8 @@ CREATE TABLE "users" (
     "photo_url" TEXT,
     "provider" TEXT,
     "role" TEXT DEFAULT 'user',
+    "city" TEXT,
+    "country" TEXT
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("user_id")
 );

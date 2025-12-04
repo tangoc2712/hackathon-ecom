@@ -24,13 +24,16 @@ const ProfilePage: React.FC = () => {
               <span className="font-semibold">Role: </span>{user.role}
             </p>
             <p>
-              <span className="font-semibold">Sign In Method: </span>{user.provider}
-            </p>
-            <p>
               <span className="font-semibold">Gender: </span>{user.gender}
             </p>
             <p>
-              <span className="font-semibold">Date of Birth: </span>{new Date(user.dob).toLocaleDateString()}
+              <span className="font-semibold">Date of Birth: </span>{new Date(user.date_of_birth).toLocaleDateString()}
+            </p>
+            <p>
+              <span className="font-semibold">City: </span>{user.city}
+            </p>
+            <p>
+              <span className="font-semibold">Country: </span>{user.country}
             </p>
           </div>
         </div>

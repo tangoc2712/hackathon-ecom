@@ -7,7 +7,7 @@ const AdminRoute: React.FC = () => {
     const user = useSelector((state: RootState) => state.user.user);
 
     // Assuming user object has an `isAdmin` property
-    return user && user.role === 'admin' ? <Outlet /> : <Navigate to="/" />;
+    return user && user.role_id === 1 ? <Outlet /> : <Navigate to="/" />;
 };
 
 export default AdminRoute;

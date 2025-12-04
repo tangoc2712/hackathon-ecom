@@ -146,7 +146,9 @@ CREATE TABLE public.users (
     uid text,
     photo_url text,
     provider text,
-    role text DEFAULT 'user'::text
+    role text DEFAULT 'user'::text,
+    city text,
+    country text
 );
 
 

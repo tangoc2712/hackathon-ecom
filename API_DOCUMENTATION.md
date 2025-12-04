@@ -121,7 +121,7 @@ The chatbot operates in **three different scenarios** based on the `customer_id`
 }
 ```
 
-**Note:** The user's role is determined by looking up the `customer_id` in the database. Users with `role = 'admin'` get full access.
+**Note:** The user's role is determined by looking up the `customer_id` in the database. Users with `role_id = 1` get full access.
 
 ---
 

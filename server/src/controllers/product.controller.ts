@@ -49,7 +49,7 @@ export const getAllProducts = asyncHandler(async (req: Request, res: Response, n
 
     if (sortBy.id) {
         // Map frontend sort keys to DB columns if needed
-        const sortKey = sortBy.id === 'price' ? 'price' : 'created_at'; 
+        const sortKey = sortBy.id === 'price' ? 'price' : 'created_at';
         orderBy[sortKey] = sortBy.desc ? 'desc' : 'asc';
     }
 
@@ -175,7 +175,7 @@ export const updateProduct = asyncHandler(
 
 export const searchProducts = asyncHandler(
     async (req: Request<{}, {}, {}, SearchProductsQuery>, res: Response, next) => {
-        const { search, category, sort, price, page = '1' } = req.query;
+        const { search, category, sort, price, page = 1 } = req.query;
 
         const limit = Number(process.env.PRODUCTS_PER_PAGE) || 8;
         const skip = (Number(page) - 1) * limit;
@@ -434,7 +434,7 @@ export const getSuggestedProducts = asyncHandler(
                         created_at: 'desc'
                     }
                 });
-                
+
                 return res.status(200).json({
                     success: true,
                     source: 'latest',
@@ -451,14 +451,81 @@ export const getSuggestedProducts = asyncHandler(
         } catch (error: any) {
             console.error("Error fetching suggested products:", error);
             // Don't fail completely, try fallback if error was due to vector search issues
-             const products = await prisma.product.findMany({
+            const products = await prisma.product.findMany({
                 where: { featured: true },
                 take: 4
             });
-             return res.status(200).json({
+            return res.status(200).json({
                 success: true,
                 products
             });
+        }
+    }
+);
+
+
+export const getProductsRatings = asyncHandler(
+    async (req: Request, res: Response, next) => {
+        const { id } = req.params;
+        const { has_comment } = req.query;
+
+        try {
+            const product = await prisma.product.findUnique({
+                where: { product_id: id }
+            });
+
+            if (!product) {
+                return next(new ApiError(404, "Product not found"));
+            }
+
+            if (has_comment) {
+                const productRatings: any[] = await prisma.$queryRaw`
+                    SELECT 
+                        product_review_id::text,
+                        product_id::text,
+                        comment,
+                        title,
+                        rating,
+                        created_at,
+                        updated_at
+                    FROM public.product_review
+                    WHERE product_id = ${id}::uuid
+                    AND (comment IS NOT NULL OR comment != '')
+                    ORDER BY created_at DESC;
+                `;
+
+                if (productRatings.length > 0) {
+                    return res.status(200).json({
+                        success: true,
+                        ratings: productRatings
+                    });
+                }
+
+            } else {
+                const productRatings: any[] = await prisma.$queryRaw`
+                    SELECT 
+                        product_review_id::text,
+                        product_id::text,
+                        comment,
+                        rating,
+                        title,
+                        created_at,
+                        updated_at
+                    FROM public.product_review
+                    WHERE product_id = ${id}::uuid
+                    ORDER BY created_at DESC;
+                `;
+
+                if (productRatings.length > 0) {
+                    return res.status(200).json({
+                        success: true,
+                        productRatings: productRatings
+                    });
+                }
+            }
+        } catch (error: any) {
+            console.error("Error fetching product ratings:", error);
+            return next(new ApiError(500, `Internal Server Error fetching product ratings: ${error.message}`));
         }
     }
 );

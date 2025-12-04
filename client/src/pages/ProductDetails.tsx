@@ -1,8 +1,9 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import BackButton from '../components/common/BackBtn';
 import RelatedProducts from '../components/RelatedProducts';
+import ProductReviews from '../components/productReviews';
+import Footer from '../components/common/MenuFooter';
 import { useProductDetailsQuery } from '../redux/api/product.api';
 import { addToCart, decrementCartItem, incrementCartItem } from '../redux/reducers/cart.reducer';
 import { RootState } from '../redux/store';
@@ -63,8 +64,7 @@ const SingleProduct: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 bg-white min-h-screen">
-            <BackButton />
+        <div className="container mx-auto px-4 py-8 bg-white min-h-screen pb-24">
             <div className="flex flex-col lg:flex-row gap-12 mt-6">
                 {/* Product Images Gallery */}
                 <div className="flex-1 flex flex-col-reverse lg:flex-row gap-4">
@@ -181,7 +181,9 @@ const SingleProduct: React.FC = () => {
                     </div>
                 </div>
             </div>
+            <ProductReviews productId={product.product_id} />
             <RelatedProducts productId={product.product_id} />
+            <Footer />
         </div>
     );
 };

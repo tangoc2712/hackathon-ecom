@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import Login from '../components/auth/Login';
 import Signup from '../components/auth/Signup';
+import Footer from '../components/common/MenuFooter';
 
 const AuthPage: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen items-center justify-center bg-white ">
+    <div className="flex flex-col min-h-screen items-center justify-center bg-white pb-24">
       <div className="flex w-full max-w-4xl bg-white  overflow-hidden">
         {/* Left Side - Illustration */}
 
@@ -28,6 +29,7 @@ const AuthPage: React.FC = () => {
 
         </div>
       </div>
+      <Footer />
     </div >
   );
 };

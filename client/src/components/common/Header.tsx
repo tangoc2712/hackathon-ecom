@@ -83,7 +83,7 @@ const Header: React.FC = () => {
   // Navigate to the appropriate profile page based on user role
   // const profileHandler = () => {
   //   if (user) {
-  //     if (user.role === 'admin') {
+  //     if (user.role === 'Admin') {
   //       navigate('/admin');
   //     } else {
   //       navigate('/profile');
@@ -136,9 +136,11 @@ const Header: React.FC = () => {
                 <div className="px-4 py-2 border-b border-gray-100 font-bold text-sm">
                   {user.full_name || "User"}
                 </div>
-                {user.role === 'admin' ? (
+                {user.role_id === 1 ? (
                   <>
                     <button onClick={() => navigate('/admin')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">Admin Dashboard</button>
+                    <button onClick={() => navigate('/profile')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">Profile</button>
+                    <button onClick={() => navigate('/my-orders')} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">My Orders</button>
                     <button onClick={logoutHandler} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-gray-800">Logout</button>
                   </>
                 ) : (

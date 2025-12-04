@@ -11,7 +11,8 @@ import {
     getSuggestedProducts,
     searchProducts,
     toggleFeaturedStatus,
-    updateProduct
+    updateProduct,
+    getProductsRatings
 } from '../controllers/product.controller';
 import { uploadImage } from '../utils/cloudinary';
 import { adminOnly, authenticateUser } from '../middleware/auth.middleware';
@@ -38,6 +39,7 @@ router.get('/categories', getAllCategories);
 router.get('/search', searchProducts);
 router.get('/:id', getProductDetails);
 router.get('/:id/related', getRelatedProducts);
+router.get('/:id/rating', getProductsRatings);
 
 
 export default router;

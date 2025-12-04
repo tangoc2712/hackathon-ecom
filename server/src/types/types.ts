@@ -23,11 +23,12 @@ export interface SearchProductsQuery {
 }
 
 export interface User {
+    role_id: number;
     email: string;
     displayName?: string;
     photoURL?: string;
     provider: string;
-    role: 'user' | 'admin';
+    role: string;
     user_id: string; // Added for Prisma compatibility
     _id?: any; // Keep for backward compatibility if needed, or remove
 }

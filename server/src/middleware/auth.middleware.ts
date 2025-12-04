@@ -32,7 +32,7 @@ export const authenticateUser = async (req: RequestWithUser, res: Response, next
 };
 
 export const adminOnly = (req: RequestWithUser, res: Response, next: NextFunction) => {
-    if (req.user?.role !== 'admin') {
+    if (req.user?.role_id !== 1) {
         return res.status(403).json({ message: 'Unauthorized , Admin Only Route' });
     }
 

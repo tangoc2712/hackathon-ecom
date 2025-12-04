@@ -6,6 +6,7 @@ import {
     MessageResponse,
     NewProductRequest,
     ProductDetailResponse,
+    ProductRatingResponse,
     ProductRequest,
     ProductResponse,
     SearchProductRequest,
@@ -95,6 +96,10 @@ export const productApi = createApi({
             query: () => 'suggested',
             providesTags: ['Product']
         }),
+        getProductRatings: builder.query<ProductRatingResponse, string>({
+            query: (id) => `${id}/rating`,
+            providesTags: ['Product']
+        }),
     }),
 });
 
@@ -110,6 +115,7 @@ export const {
     useGetAllFeaturedProductsQuery,
     useFeatureProductMutation,
     useGetRelatedProductsQuery,
-    useGetSuggestedProductsQuery
+    useGetSuggestedProductsQuery,
+    useGetProductRatingsQuery
 } = productApi;
 
