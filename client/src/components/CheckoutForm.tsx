@@ -38,15 +38,37 @@ const CheckoutForm: React.FC = () => {
     if (paymentMethod === 'ZaloPay') {
       setIsProcessing(true);
       try {
+        const zaloPayItems = cartItems.map(item => ({
+          itemid: item.productId,
+          itemname: item.name,
+          itemprice: Math.round(item.price * 25000),
+          itemquantity: item.quantity
+        }));
+
+        if (tax > 0) {
+          zaloPayItems.push({
+            itemid: "tax",
+            itemname: "Tax",
+            itemprice: Math.round(tax * 25000),
+            itemquantity: 1
+          });
+        }
+
+        if (shippingCharges > 0) {
+          zaloPayItems.push({
+            itemid: "shipping",
+            itemname: "Shipping Charges",
+            itemprice: Math.round(shippingCharges * 25000),
+            itemquantity: 1
+          });
+        }
+
+        const zaloPayAmount = zaloPayItems.reduce((acc, item) => acc + (item.itemprice * item.itemquantity), 0);
+
         const res = await createZaloPayOrder({
-          amount: Math.round(total * 25000), // Convert USD to VND (approx)
+          amount: zaloPayAmount,
           description: `Payment for order by ${user?.full_name || user?.displayName || user?.email}`,
-          items: cartItems.map(item => ({
-            itemid: item.productId,
-            itemname: item.name,
-            itemprice: Math.round(item.price),
-            itemquantity: item.quantity
-          })),
+          items: zaloPayItems,
           app_user: user?.user_id,
           shippingInfo,
           subTotal,

@@ -42,6 +42,10 @@ Before deploying, prepare the following environment variables:
 | `CLOUDINARY_API_SECRET` | Cloudinary API secret | ✅ |
 | `STRIPE_SECRET_KEY` | Stripe secret key | ✅ |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret | ✅ |
+| `ZALO_APP_ID` | ZaloPay App ID | ✅ |
+| `ZALO_KEY1` | ZaloPay Key 1 (Signing) | ✅ |
+| `ZALO_KEY2` | ZaloPay Key 2 (Callback Verification) | ✅ |
+| `ZALO_ENDPOINT` | ZaloPay API Endpoint | ✅ |
 | `PORT` | Server port (auto-set by Cloud Run) | ⚠️ Auto |
 | `NODE_ENV` | Environment (set to `production`) | ⚠️ Auto |
 

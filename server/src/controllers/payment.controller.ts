@@ -70,14 +70,24 @@ export const createZaloPayOrder = async (req: Request, res: Response, next: Next
     }
 
     // 2. Call ZaloPay Service
+    // Simplify items to avoid ZaloPay validation errors (error -53)
+    const simplifiedItem = [{
+        itemid: newOrder.order_id,
+        itemname: `Payment for Order #${newOrder.order_id}`,
+        itemprice: amount,
+        itemquantity: 1
+    }];
+
+    const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+
     const result = await ZaloPayService.createOrder({
         amount,
         description,
-        items,
+        items: simplifiedItem,
         app_user: app_user || "DemoUser",
         embed_data: {
             order_id: newOrder.order_id,
-            redirecturl: 'http://localhost:5173/order-success' // Redirect to success page
+            redirecturl: `${CLIENT_URL}/order-success` // Redirect to success page
         }
     });
 
