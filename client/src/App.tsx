@@ -47,6 +47,7 @@ const AdminFeaturedProducts = lazy(() => import('./pages/admin/FeaturedProduct')
 const AdminManageProduct = lazy(() => import('./components/admin/ManageProduct'));
 const AdminOrderDetails = lazy(() => import('./pages/admin/AdminOrderDetails'));
 const AdminLooker = lazy(() => import('./pages/admin/AdminLooker'));
+const AdminChat = lazy(() => import('./pages/admin/AdminChat'));
 
 // Other pages
 const MyOrders = lazy(() => import('./pages/MyOrders'));
@@ -128,6 +129,7 @@ const App: React.FC = () => {
                                     <Route path="orders" element={<AdminOrders />} />
                                     <Route path="orders/:orderId" element={<AdminOrderDetails />} />
                                     <Route path="looker" element={<AdminLooker />} />
+                                    <Route path="chat" element={<AdminChat />} />
                                 </Route>
                             </Route>
 

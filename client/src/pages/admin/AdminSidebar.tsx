@@ -1,6 +1,6 @@
 import { signOut } from 'firebase/auth';
 import React from 'react';
-import { FaBox, FaClipboardList, FaMoneyCheckAlt, FaSignOutAlt, FaTachometerAlt, FaTimes, FaUsers } from 'react-icons/fa';
+import { FaBox, FaClipboardList, FaCommentDots, FaMoneyCheckAlt, FaSignOutAlt, FaTachometerAlt, FaTimes, FaUsers } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { auth } from '../../firebaseConfig';
@@ -129,6 +129,17 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isSidebarOpen, toggleSideba
           >
             <FaClipboardList className="mr-2" />
             Orders
+          </NavLink>
+
+          <NavLink
+            to="/admin/chat"
+            className={({ isActive }) =>
+              isActive ? 'flex items-center p-2 my-4 text-blue-600 font-bold' : 'flex items-center p-2 my-4 text-gray-600 hover:text-blue-600'
+            }
+            onClick={toggleSidebar}
+          >
+            <FaCommentDots className="mr-2" />
+            Chatnalys
           </NavLink>
 
           <button type='button' onClick={logoutHandler} className="flex items-center p-2 my-4 text-gray-600 hover:text-blue-600">

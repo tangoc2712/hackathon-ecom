@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import { FaBars } from 'react-icons/fa';
-import ChatWidget from '../../components/admin/ChatWidget';
+
 
 const AdminLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -24,7 +24,7 @@ const AdminLayout: React.FC = () => {
       <div className="flex-1 p-10 transition-all duration-300 overflow-y-auto md:pl-72 pr-10">
         <Outlet />
       </div>
-      <ChatWidget />
+
     </div>
   );
 };

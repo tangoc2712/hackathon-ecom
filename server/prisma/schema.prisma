@@ -11,7 +11,7 @@ datasource db {
 }
 
 model User {
-  user_id       String    @id @default(uuid()) @db.Uuid
+  user_id       String    @id @default(uuid())
   email         String    @unique
   password_hash String?
   full_name     String?
@@ -146,7 +146,7 @@ model Coupon {
 model ProductReview {
   product_review_id String    @id @default(uuid()) @db.Uuid
   product_id        String?   @db.Uuid
-  user_id           String?   @db.Uuid
+  user_id           String?
   rating            Int?
   title             String?
   comment           String?
