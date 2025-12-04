@@ -155,6 +155,23 @@ CREATE TABLE public.users (
 ALTER TABLE public.users OWNER TO postgres;
 
 --
+-- Name: category; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.category (
+    category_id integer NOT NULL,
+    name text NOT NULL,
+    parent_category_id integer,
+    type text,
+    created_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp(6) with time zone DEFAULT CURRENT_TIMESTAMP,
+    img_url text
+);
+
+
+ALTER TABLE public.category OWNER TO postgres;
+
+--
 -- Data for Name: _prisma_migrations; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 

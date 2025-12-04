@@ -23,19 +23,27 @@ export const getLatestProducts = asyncHandler(
 
 export const getAllCategories = asyncHandler(
     async (req: Request, res: Response, next) => {
+        try {
+            // Use raw query for vector similarity search
+            // Cast price to float to ensure JSON serialization works
+            const parent_categories = await prisma.$queryRaw`
+                SELECT 
+                    category_id,
+                    name,
+                    parent_category_id,
+                    type,
+                    img_url
+                FROM public.category;
+            `;
 
-        const categories = await prisma.product.findMany({
-            select: { category_name: true },
-            distinct: ['category_name']
-        });
-
-        const categoryList = categories.map(c => c.category_name).filter(Boolean);
-
-        return res.status(200).json({
-            success: true,
-            categories: categoryList
-        });
-
+            return res.status(200).json({
+                success: true,
+                categories: parent_categories
+            });
+        } catch (error: any) {
+            console.error("Error fetching categories:", error);
+            return next(new ApiError(500, `Internal Server Error fetching categories: ${error.message}`));
+        }
     }
 );
 
@@ -187,8 +195,19 @@ export const searchProducts = asyncHandler(
         }
 
         if (category) {
-            where.category_name = { equals: category, mode: 'insensitive' };
+                where.category_name = { equals: category, mode: 'insensitive' };
         }
+
+            // Support searching by numeric category_id when provided
+            if ((req.query as any).category_id) {
+                const cid = Number((req.query as any).category_id);
+                if (!isNaN(cid)) {
+                    // prefer category_id filter over category_name
+                    where.category_id = cid;
+                    // remove category_name filter if previously set
+                    if (where.category_name) delete where.category_name;
+                }
+            }
 
         if (price) {
             const [min, max] = price.split(',').map(Number);

@@ -5,14 +5,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../../firebaseConfig';
 import { useLogoutUserMutation } from '../../redux/api/user.api';
+import { useCategoriesQuery } from '../../redux/api/product.api';
 import { userNotExists } from '../../redux/reducers/user.reducer';
 import { RootState } from '../../redux/store';
 import { notify } from '../../utils/util';
 import { useEventTracking } from '../../hooks/useEventTracking';
 
+interface Category {
+  category_id: number;
+  name: string;
+  parent_category_id?: number | null;
+  type: string;
+  img_url?: string;
+}
+
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [parentCategories, setParentCategories] = useState<Category[]>([]);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -23,6 +33,17 @@ const Header: React.FC = () => {
 
   const [logout] = useLogoutUserMutation();
   const { trackLogout } = useEventTracking();
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategoriesQuery('');
+
+  // Fetch parent categories
+  useEffect(() => {
+    if (categoriesData?.categories) {
+      const filtered = (categoriesData.categories as Category[]).filter(
+        (cat) => cat.type === 'category'
+      );
+      setParentCategories(filtered);
+    }
+  }, [categoriesData]);
 
   // Toggle mobile menu visibility
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -110,10 +131,21 @@ const Header: React.FC = () => {
 
         {/* Desktop Menu - Categories */}
         <nav className="hidden md:flex items-center space-x-8 font-bold text-sm">
-          <Link to="/products?category=women" className="hover:underline decoration-2 underline-offset-4">WOMEN</Link>
-          <Link to="/products?category=men" className="hover:underline decoration-2 underline-offset-4">MEN</Link>
-          <Link to="/products?category=kids" className="hover:underline decoration-2 underline-offset-4">KIDS</Link>
-          <Link to="/products?category=baby" className="hover:underline decoration-2 underline-offset-4">BABY</Link>
+          {categoriesLoading ? (
+            <span className="text-gray-500">Loading...</span>
+          ) : parentCategories.length > 0 ? (
+            parentCategories.map((category) => (
+              <Link
+                key={category.category_id}
+                to={`/products?category=${encodeURIComponent(category.name)}`}
+                className="hover:underline decoration-2 underline-offset-4"
+              >
+                {category.name.toUpperCase()}
+              </Link>
+            ))
+          ) : (
+            <span className="text-gray-500">No categories</span>
+          )}
         </nav>
 
         {/* Right Icons */}
@@ -182,10 +214,21 @@ const Header: React.FC = () => {
           </div>
 
           <div className="flex flex-col space-y-6 text-xl font-bold">
-            <Link to="/products?category=women" onClick={closeMobileMenu}>WOMEN</Link>
-            <Link to="/products?category=men" onClick={closeMobileMenu}>MEN</Link>
-            <Link to="/products?category=kids" onClick={closeMobileMenu}>KIDS</Link>
-            <Link to="/products?category=baby" onClick={closeMobileMenu}>BABY</Link>
+            {categoriesLoading ? (
+              <span className="text-gray-500">Loading categories...</span>
+            ) : parentCategories.length > 0 ? (
+              parentCategories.map((category) => (
+                <Link
+                  key={category.category_id}
+                  to={`/products?category=${encodeURIComponent(category.name)}`}
+                  onClick={closeMobileMenu}
+                >
+                  {category.name.toUpperCase()}
+                </Link>
+              ))
+            ) : (
+              <span className="text-gray-500">No categories available</span>
+            )}
             <hr />
             <Link to="/profile" onClick={closeMobileMenu} className="font-normal text-base">Profile</Link>
             <Link to="/my-orders" onClick={closeMobileMenu} className="font-normal text-base">My Orders</Link>

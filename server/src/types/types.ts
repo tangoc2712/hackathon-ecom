@@ -17,6 +17,7 @@ export interface BaseQueryType {
 export interface SearchProductsQuery {
     search?: string;
     category?: string;
+    category_id?: string;
     sort?: 'asc' | 'desc' | 'relevance';    
     price?: string; // Assuming price is in the format "min,max"
     page?: string;

@@ -11,6 +11,7 @@ import { useEventTracking } from '../hooks/useEventTracking';
 const SearchPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number | undefined>(undefined);
     const [minPrice, setMinPrice] = useState<number | undefined>(undefined);
     const [maxPrice, setMaxPrice] = useState<number | undefined>(undefined);
     const [sort, setSort] = useState<'asc' | 'desc' | 'relevance'>('relevance');
@@ -32,6 +33,7 @@ const SearchPage: React.FC = () => {
     const { data, isLoading, isError, refetch } = useSearchProductsQuery({
         search: searchTerm,
         category: selectedCategory || undefined,
+        category_id: selectedCategoryId !== undefined ? String(selectedCategoryId) : undefined,
         price: minPrice !== undefined && maxPrice !== undefined ? `${minPrice},${maxPrice}` : undefined,
         sort: sort !== 'relevance' ? sort : undefined,
         page,
@@ -39,11 +41,27 @@ const SearchPage: React.FC = () => {
         skip: !isSearching
     });
 
+    // Auto-trigger search when filters change (if already searching)
     useEffect(() => {
         if (isSearching) {
+            setPage(1); // Reset to page 1 when filters change
             refetch();
         }
-    }, [searchTerm, selectedCategory, minPrice, maxPrice, sort, page, isSearching, refetch]);
+    }, [searchTerm, selectedCategory, selectedCategoryId, minPrice, maxPrice, sort, isSearching, refetch]);
+
+    // Auto-enable search when user changes filters (category/price/sort) even without entering search term
+    useEffect(() => {
+        if (!isSearching && (selectedCategory || selectedCategoryId !== undefined || minPrice !== undefined || maxPrice !== undefined || sort !== 'relevance')) {
+            setIsSearching(true);
+        }
+    }, [selectedCategory, selectedCategoryId, minPrice, maxPrice, sort, isSearching]);
+
+    // Handle page change separately (don't reset page, just refetch)
+    useEffect(() => {
+        if (isSearching && page > 1) {
+            refetch();
+        }
+    }, [page, isSearching, refetch]);
 
     const onSearch = () => {
         setPage(1);
@@ -55,6 +73,7 @@ const SearchPage: React.FC = () => {
     const clearFilters = () => {
         setSearchTerm('');
         setSelectedCategory('');
+        setSelectedCategoryId(undefined);
         setMinPrice(undefined);
         setMaxPrice(undefined);
         setSort('relevance');
@@ -79,6 +98,8 @@ const SearchPage: React.FC = () => {
                             categories={categoriesData?.categories || []}
                             selectedCategory={selectedCategory}
                             setSelectedCategory={setSelectedCategory}
+                            selectedCategoryId={selectedCategoryId}
+                            setSelectedCategoryId={setSelectedCategoryId}
                             minPrice={minPrice}
                             setMinPrice={setMinPrice}
                             maxPrice={maxPrice}

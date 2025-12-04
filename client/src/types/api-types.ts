@@ -72,8 +72,9 @@ export interface Product {
     createdAt: string;
     updatedAt: string;
 }
+
+// Product Rating
 export interface ProductRating {
-    created_at: string;
     product_review_id: string;
     product_id: string;
     rating: number;
@@ -91,6 +92,7 @@ export interface ProductResponse {
     currentPage: number;
 }
 
+// Product Rating Response
 export interface ProductRatingResponse {
     success: boolean;
     productRatings: ProductRating[];
@@ -131,11 +133,21 @@ export type UpdateProductRequest = {
 export type DeleteProductRequest = {
     productId: string;
 }
+// Category
+export type Category = {
+    category_id: number;
+    name: string;
+    parent_category_id: number;
+    type: string;
+    img_url: string;
+    created_at: string;
+    updated_at: string;
+}
 
-// Categories 
+// Category response
 export type CategoriesResponse = {
     success: boolean;
-    categories: string[];
+    categories: Category[];
 }
 
 // feature Product
@@ -148,6 +160,7 @@ export type SearchProductRequest = {
     price?: string;
     page: number;
     category?: string;
+    category_id?: string | number;
     search: string;
     sort?: string;
 }

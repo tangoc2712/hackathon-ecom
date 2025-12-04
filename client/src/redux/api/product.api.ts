@@ -40,11 +40,13 @@ export const productApi = createApi({
             providesTags: ['Product']
         }),
         searchProducts: builder.query<SearchProductResponse, SearchProductRequest>({
-            query: ({ price, search, sort, category, page }) => {
+            query: ({ price, search, sort, category, category_id, page }) => {
                 let base = `/search?search=${search}&page=${page}`;
                 if (price) base += `&price=${price}`;
                 if (sort) base += `&sort=${sort}`;
-                if (category) base += `&category=${category}`;
+                // Prefer category_id when provided
+                if (category_id !== undefined && category_id !== null) base += `&category_id=${category_id}`;
+                else if (category) base += `&category=${encodeURIComponent(category)}`;
                 return base;
             },
             providesTags: ['Product'],
