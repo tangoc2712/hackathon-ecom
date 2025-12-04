@@ -55,7 +55,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFound'));
 
 const App: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const { data, error } = useGetMeQuery();
+    const { data, error, isLoading } = useGetMeQuery();
     const { loading } = useSelector((state: RootState) => state.user);
 
     // Dispatch user status on data or error change
@@ -64,15 +64,15 @@ const App: React.FC = () => {
             // User is logged in - clear anonymous user ID
             clearAnonymousUserId();
             dispatch(userExists(data.user));
-        } else if (error) {
-            // No logged-in user - create/use anonymous user (session-only)
+        } else if (error && !isLoading) {
+            // Only logout if we got an actual error (not just loading)
             getOrCreateAnonymousUserId(); // Create/get anonymous user ID (stored in sessionStorage)
             dispatch(setAnonymousUser());
         }
-    }, [data, error, dispatch]);
+    }, [data, error, isLoading, dispatch]);
 
     // Show loader while loading user data
-    if (loading) return <Loader />;
+    if (loading || isLoading) return <Loader />;
 
     return (
         <>

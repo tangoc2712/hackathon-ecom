@@ -41,6 +41,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
         });
 
@@ -89,6 +90,7 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
         res.cookie('token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
         });
 

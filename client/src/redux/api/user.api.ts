@@ -30,7 +30,14 @@ export const userApi = createApi({
             }),
         }),
         getMe: builder.query<UserResponse, void>({
-            query: () => 'me',
+            query: () => ({
+                url: 'me',
+                method: 'GET',
+            }),
+            // Retry on network error or 5xx errors (not 401 Unauthorized)
+            extraOptions: {
+                maxRetries: 2,
+            }
         }),
         logoutUser: builder.mutation<void, void>({
             query: () => ({
