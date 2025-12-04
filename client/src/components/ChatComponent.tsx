@@ -4,11 +4,38 @@ import { FaPaperPlane } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import ReactMarkdown from 'react-markdown';
+import ProductCard from './chat/ProductCard';
+import OrderCard from './chat/OrderCard';
+
+interface Product {
+    type: 'product';
+    name: string;
+    price: number;
+    sale_price: number | null;
+    image: string;
+    url: string;
+    stock: number;
+    colors: string[];
+    sizes: string[];
+}
+
+interface Order {
+    type: 'order';
+    order_id: string;
+    status: string;
+    total: number;
+    currency: string;
+    placed_date: string;
+    url: string;
+    items_count: number;
+    item_names: string[];
+}
 
 interface Message {
     sender: 'user' | 'bot';
     text: string;
     data?: any[];
+    content?: (string | Product[] | Order[])[]; // Mixed content for bot messages
 }
 
 const ChatComponent: React.FC = () => {
@@ -28,6 +55,89 @@ const ChatComponent: React.FC = () => {
     };
 
     useEffect(scrollToBottom, [messages]);
+
+    const parseResponse = (response: string): (string | Product[] | Order[])[] => {
+        const lines = response.split('\n');
+        const content: (string | Product[] | Order[])[] = [];
+        let currentText = '';
+        let currentProducts: Product[] = [];
+        let currentOrders: Order[] = [];
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('{"type":"product"')) {
+                // If we have accumulated text, push it first
+                if (currentText) {
+                    content.push(currentText);
+                    currentText = '';
+                }
+                // If we have accumulated orders, push them first
+                if (currentOrders.length > 0) {
+                    content.push(currentOrders);
+                    currentOrders = [];
+                }
+                try {
+                    const product = JSON.parse(trimmed);
+                    currentProducts.push(product);
+                } catch (e) {
+                    console.error('Failed to parse product JSON:', e);
+                    // If parsing fails, treat as text. But first push any accumulated products
+                    if (currentProducts.length > 0) {
+                        content.push(currentProducts);
+                        currentProducts = [];
+                    }
+                    currentText += (currentText ? '\n' : '') + line;
+                }
+            } else if (trimmed.startsWith('{"type":"order"')) {
+                // If we have accumulated text, push it first
+                if (currentText) {
+                    content.push(currentText);
+                    currentText = '';
+                }
+                // If we have accumulated products, push them first
+                if (currentProducts.length > 0) {
+                    content.push(currentProducts);
+                    currentProducts = [];
+                }
+                try {
+                    const order = JSON.parse(trimmed);
+                    currentOrders.push(order);
+                } catch (e) {
+                    console.error('Failed to parse order JSON:', e);
+                    // If parsing fails, treat as text. But first push any accumulated orders
+                    if (currentOrders.length > 0) {
+                        content.push(currentOrders);
+                        currentOrders = [];
+                    }
+                    currentText += (currentText ? '\n' : '') + line;
+                }
+            } else {
+                // If we have accumulated products, push them first
+                if (currentProducts.length > 0) {
+                    content.push(currentProducts);
+                    currentProducts = [];
+                }
+                // If we have accumulated orders, push them first
+                if (currentOrders.length > 0) {
+                    content.push(currentOrders);
+                    currentOrders = [];
+                }
+                currentText += (currentText ? '\n' : '') + line;
+            }
+        }
+
+        if (currentProducts.length > 0) {
+            content.push(currentProducts);
+        }
+        if (currentOrders.length > 0) {
+            content.push(currentOrders);
+        }
+        if (currentText) {
+            content.push(currentText);
+        }
+
+        return content;
+    };
 
     const handleSend = async () => {
         if (!input.trim()) return;
@@ -64,10 +174,13 @@ const ChatComponent: React.FC = () => {
                 localStorage.setItem('chat_session_id', data.session_id);
             }
 
+            const parsedContent = parseResponse(data.response);
+
             setMessages(prev => [...prev, {
                 sender: 'bot',
-                text: data.response,
-                data: data.debug_info?.data_accessed ? [] : undefined // The API returns debug_info, we might want to parse it or just show the text response
+                text: data.response, // Keep original text for reference if needed
+                content: parsedContent,
+                data: data.debug_info?.data_accessed ? [] : undefined
             }]);
         } catch (error) {
             console.error("Chat error:", error);
@@ -134,7 +247,35 @@ const ChatComponent: React.FC = () => {
                                         <p>{msg.text}</p>
                                     ) : (
                                         <div className="prose prose-sm max-w-none">
-                                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                            {msg.content ? (
+                                                msg.content.map((item, idx) => {
+                                                    if (typeof item === 'string') {
+                                                        return <ReactMarkdown key={idx}>{item}</ReactMarkdown>;
+                                                    } else if (Array.isArray(item) && item.length > 0) {
+                                                        const firstItem = item[0] as any;
+                                                        if (firstItem.type === 'product') {
+                                                            return (
+                                                                <div key={idx} className="grid grid-cols-2 gap-2 my-2">
+                                                                    {(item as Product[]).map((product, pIdx) => (
+                                                                        <ProductCard key={pIdx} product={product} />
+                                                                    ))}
+                                                                </div>
+                                                            );
+                                                        } else if (firstItem.type === 'order') {
+                                                            return (
+                                                                <div key={idx} className="grid grid-cols-1 gap-2 my-2">
+                                                                    {(item as Order[]).map((order, oIdx) => (
+                                                                        <OrderCard key={oIdx} order={order} />
+                                                                    ))}
+                                                                </div>
+                                                            );
+                                                        }
+                                                    }
+                                                    return null;
+                                                })
+                                            ) : (
+                                                <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                            )}
                                         </div>
                                     )}
                                     {/* Render Data if available */}
