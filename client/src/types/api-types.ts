@@ -75,6 +75,7 @@ export interface Product {
 
 // Product Rating
 export interface ProductRating {
+    created_at: string;
     product_review_id: string;
     product_id: string;
     rating: number;

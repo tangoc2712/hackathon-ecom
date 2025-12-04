@@ -39,14 +39,14 @@ const FilterOptions: React.FC<FilterOptionsProps> = ({
     sort,
     setSort,
     clearFilters,
-    selectedCategoryId,
+    //selectedCategoryId,
     setSelectedCategoryId,
 }) => {
     // State to toggle the visibility of categories
     const [showCategories, setShowCategories] = useState(true);
 
     // Fetch categories like Header: get all categories and filter for type === 'category'
-    const { data: categoriesData, isLoading: categoriesLoading, isError: categoriesError } = useCategoriesQuery('');
+    const { data: categoriesData } = useCategoriesQuery('');
     const parentCategoryNames: string[] = categoriesData?.categories
         ? (categoriesData.categories as Category[]).filter((c) => c.type === 'category').map((c) => c.name)
         : [];
