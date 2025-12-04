@@ -10,7 +10,7 @@ import jwt from 'jsonwebtoken';
 // Login 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
-    
+
     try {
         if (!email || !password) {
             return res.status(400).json({ message: 'Please provide email and password' });
@@ -23,7 +23,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         }
 
         if (!user.password_hash) {
-             return res.status(401).json({ message: 'Invalid email or password' }); // User might have signed up via other method if we had any
+            return res.status(401).json({ message: 'Invalid email or password' }); // User might have signed up via other method if we had any
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
@@ -38,7 +38,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
             { expiresIn: '7d' }
         );
 
-        res.cookie('token', token, {
+        res.cookie('__session', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
@@ -87,15 +87,15 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
             { expiresIn: '7d' }
         );
 
-        res.cookie('token', token, {
+        res.cookie('__session', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
         });
 
-         // Remove password_hash from response
-         const { password_hash, ...userWithoutPassword } = user;
+        // Remove password_hash from response
+        const { password_hash, ...userWithoutPassword } = user;
 
         return res.status(200).json({ message: 'Signup successful', user: userWithoutPassword });
     } catch (error) {
@@ -114,7 +114,7 @@ export const getMe = asyncHandler(async (req: RequestWithUser, res: Response, ne
 });
 
 export const logoutUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    res.clearCookie('token');
+    res.clearCookie('__session');
     return res.status(200).json({
         message: 'Logout successful'
     });
