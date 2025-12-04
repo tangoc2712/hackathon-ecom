@@ -53,8 +53,8 @@ const ChatComponent: React.FC = () => {
                 payload.customer_id = customerId;
             }
 
-            // Use the proxy endpoint /chat/message which forwards to localhost:8000
-            const response = await axios.post('/chat/message', payload);
+            // Use the backend API endpoint
+            const response = await axios.post('/api/v1/chat/message', payload);
 
             const data = response.data;
 
