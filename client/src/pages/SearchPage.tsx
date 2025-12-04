@@ -6,6 +6,7 @@ import { useCategoriesQuery, useSearchProductsQuery } from '../redux/api/product
 import ReactPaginate from 'react-paginate';
 import { Product } from '../types/api-types';
 import ProductCard from '../components/ProductCard';
+import { useEventTracking } from '../hooks/useEventTracking';
 
 const SearchPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -15,6 +16,7 @@ const SearchPage: React.FC = () => {
     const [sort, setSort] = useState<'asc' | 'desc' | 'relevance'>('relevance');
     const [page, setPage] = useState(1);
     const [isSearching, setIsSearching] = useState(false);
+    const { trackSearch } = useEventTracking();
 
     const location = useLocation();
     const query = new URLSearchParams(location.search).get('query');
@@ -47,6 +49,7 @@ const SearchPage: React.FC = () => {
         setPage(1);
         setIsSearching(true);
         refetch();
+        trackSearch(searchTerm);
     };
 
     const clearFilters = () => {

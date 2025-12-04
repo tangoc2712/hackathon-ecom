@@ -8,8 +8,11 @@ import PublicRoute from './components/routes/PublicRoute';
 import AdminRoute from './components/routes/AdminRoute';
 import Loader from './components/common/Loader'; // Import Loader
 import { useGetMeQuery } from './redux/api/user.api';
-import { userExists, userNotExists } from './redux/reducers/user.reducer';
+import { userExists, setAnonymousUser } from './redux/reducers/user.reducer';
 import { AppDispatch, RootState } from './redux/store';
+import { getOrCreateAnonymousUserId, clearAnonymousUserId } from './utils/anonymousUser';
+import PageViewTracker from './components/common/PageViewTracker';
+import SessionTracker from './components/common/SessionTracker';
 
 // Register Chart.js components
 import { CategoryScale, Chart as ChartJS, Legend, LineElement, LinearScale, PointElement, Title, Tooltip } from 'chart.js';
@@ -58,9 +61,13 @@ const App: React.FC = () => {
     // Dispatch user status on data or error change
     useEffect(() => {
         if (data?.user) {
+            // User is logged in - clear anonymous user ID
+            clearAnonymousUserId();
             dispatch(userExists(data.user));
         } else if (error) {
-            dispatch(userNotExists());
+            // No logged-in user - create/use anonymous user (session-only)
+            const anonymousUserId = getOrCreateAnonymousUserId();
+            dispatch(setAnonymousUser(anonymousUserId));
         }
     }, [data, error, dispatch]);
 
@@ -73,6 +80,8 @@ const App: React.FC = () => {
             <ToastContainer position="bottom-center" />
             <div className="flex flex-col min-h-screen">
                 <Router>
+                    <PageViewTracker />
+                    <SessionTracker />
                     <Suspense fallback={<Loader />}>
                         <Routes>
                             {/* Public routes */}
@@ -83,6 +92,7 @@ const App: React.FC = () => {
                                 <Route path="product/:productId" element={<ProductDetails />} />
                                 <Route path="products/:productId/ratings" element={<ProductRatingsPage />} />
                                 <Route path="search" element={<SearchPage />} />
+                                <Route path="cart" element={<CartPage />} />
                             </Route>
 
                             {/* Public routes */}
@@ -93,7 +103,6 @@ const App: React.FC = () => {
                             {/* Protected routes */}
                             <Route element={<ProtectedRoute />}>
                                 <Route element={<Layout />}>
-                                    <Route path="cart" element={<CartPage />} />
                                     <Route path="profile" element={<ProfilePage />} />
                                     <Route path="my-orders" element={<MyOrders />} />
                                     <Route path="/order/:id" element={<OrderDetails />} />

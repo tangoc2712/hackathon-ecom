@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { UserReducerIntialState ,User} from "../../types/api-types";
+import { UserReducerIntialState, User } from "../../types/api-types";
 
 const initialState: UserReducerIntialState = {
     user: null,
@@ -17,10 +17,15 @@ export const userSlice = createSlice({
         userNotExists: (state) => {
             state.loading = false;
             state.user = null;
+        },
+        setAnonymousUser: (state) => {
+            state.loading = false;
+            state.user = null; // Keep user as null for anonymous users
+            // Anonymous ID is stored separately in sessionStorage for tracking purposes only
         }
     }
 });
 
-export const { userExists, userNotExists } = userSlice.actions;
+export const { userExists, userNotExists, setAnonymousUser } = userSlice.actions;
 
 export default userSlice.reducer;

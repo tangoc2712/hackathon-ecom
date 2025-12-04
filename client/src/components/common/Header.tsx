@@ -8,6 +8,7 @@ import { useLogoutUserMutation } from '../../redux/api/user.api';
 import { userNotExists } from '../../redux/reducers/user.reducer';
 import { RootState } from '../../redux/store';
 import { notify } from '../../utils/util';
+import { useEventTracking } from '../../hooks/useEventTracking';
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -21,6 +22,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
 
   const [logout] = useLogoutUserMutation();
+  const { trackLogout } = useEventTracking();
 
   // Toggle mobile menu visibility
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -34,6 +36,7 @@ const Header: React.FC = () => {
       await signOut(auth);
       await logout().unwrap();
       dispatch(userNotExists());
+      trackLogout();
       notify('Logout successful', 'success');
       navigate('/auth');
     } catch (error: unknown) {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product } from '../types/api-types';
+import { useEventTracking } from '../hooks/useEventTracking';
 
 interface ProductCardProps {
   product: Product;
@@ -8,9 +9,12 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const navigate = useNavigate();
+  const { trackViewProduct } = useEventTracking();
 
   const handleNavigateToProduct = (event: React.MouseEvent) => {
     event.stopPropagation();
+    // Track view_product event
+    trackViewProduct(product.product_id, product.name, product.category, product.price);
     navigate(`/product/${product.product_id}`);
   };
 

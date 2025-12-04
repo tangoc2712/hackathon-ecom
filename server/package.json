@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
+    "@google-cloud/pubsub": "^5.2.0",
     "@prisma/client": "^6.19.0",
     "@types/stripe": "^8.0.417",
     "axios": "^1.13.2",

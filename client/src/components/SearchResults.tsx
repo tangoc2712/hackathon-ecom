@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types/api-types';
+import { useEventTracking } from '../hooks/useEventTracking';
 
 // Define the props for the SearchResults component
 interface SearchResultsProps {
@@ -9,6 +10,7 @@ interface SearchResultsProps {
 
 // Define the SearchResults component
 const SearchResults: React.FC<SearchResultsProps> = ({ products }) => {
+  const { trackViewProduct } = useEventTracking();
   return (
     // Container for search results
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -22,7 +24,11 @@ const SearchResults: React.FC<SearchResultsProps> = ({ products }) => {
           {/* Product Price */}
           <p className="text-lg font-semibold text-gray-800">{product.currency || '$'} {Number(product.price).toFixed(2)}</p>
           {/* View Details Button */}
-          <Link to={`/product/${product.product_id}`} className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg text-center">
+          <Link
+            to={`/product/${product.product_id}`}
+            className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg text-center"
+            onClick={() => trackViewProduct(product.product_id, product.name, product.category, product.price)}
+          >
             View Details
           </Link>
         </div>

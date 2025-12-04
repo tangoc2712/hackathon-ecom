@@ -7,6 +7,7 @@ import cartReducer from "./reducers/cart.reducer";
 import { couponApi } from "./api/coupon.api";
 import { paymentApi } from "./api/payment.api";
 import { statsApi } from "./api/stats.api";
+import { eventApi } from "./api/event.api";
 
 const store = configureStore({
     reducer: {
@@ -18,6 +19,7 @@ const store = configureStore({
         [couponApi.reducerPath]: couponApi.reducer,
         [paymentApi.reducerPath]: paymentApi.reducer,
         [statsApi.reducerPath]: statsApi.reducer,
+        [eventApi.reducerPath]: eventApi.reducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(
@@ -26,7 +28,8 @@ const store = configureStore({
             orderApi.middleware,
             couponApi.middleware,
             paymentApi.middleware,
-            statsApi.middleware
+            statsApi.middleware,
+            eventApi.middleware
         )
 });
 

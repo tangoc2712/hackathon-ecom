@@ -3,8 +3,10 @@ import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import { Link } from 'react-router-dom';
 import { useGetAllFeaturedProductsQuery } from '../redux/api/product.api';
+import { useEventTracking } from '../hooks/useEventTracking';
 
 const FeaturedSection: React.FC = () => {
+    const { trackViewProduct } = useEventTracking();
 
     // Fetch all featured products using a Redux API hook
     const { data } = useGetAllFeaturedProductsQuery('');
@@ -29,6 +31,7 @@ const FeaturedSection: React.FC = () => {
                             <Link
                                 to={`/product/${product.product_id}`}
                                 className="inline-block bg-primary text-white px-8 py-3 font-bold hover:bg-red-700 transition duration-300"
+                                onClick={() => trackViewProduct(product.product_id, product.name, product.category, product.price)}
                             >
                                 VIEW DETAILS
                             </Link>

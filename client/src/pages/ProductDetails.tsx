@@ -7,6 +7,7 @@ import Footer from '../components/common/MenuFooter';
 import { useProductDetailsQuery } from '../redux/api/product.api';
 import { addToCart, decrementCartItem, incrementCartItem } from '../redux/reducers/cart.reducer';
 import { RootState } from '../redux/store';
+import { useEventTracking } from '../hooks/useEventTracking';
 
 const SingleProduct: React.FC = () => {
     const { productId } = useParams<{ productId: string }>();
@@ -15,6 +16,8 @@ const SingleProduct: React.FC = () => {
     const navigate = useNavigate();
     const cartItems = useSelector((state: RootState) => state.cart.cartItems);
     const cartItem = cartItems.find(item => item.productId === productId);
+
+    const { trackViewProduct, trackAddToCart } = useEventTracking();
 
     const [selectedPhoto, setSelectedPhoto] = React.useState<string>('');
     const [selectedColor, setSelectedColor] = React.useState<string>('');
@@ -27,8 +30,10 @@ const SingleProduct: React.FC = () => {
             setSelectedPhoto(product.photo || (product.photos && product.photos.length > 0 ? product.photos[0] : ''));
             if (product.colors && product.colors.length > 0) setSelectedColor(product.colors[0].name);
             if (product.sizes && product.sizes.length > 0) setSelectedSize(product.sizes[0]);
+
+            trackViewProduct(product.product_id, product.name, product.category, Number(product.price));
         }
-    }, [product]);
+    }, [product, trackViewProduct]);
 
     if (isLoading) return <div className="flex justify-center items-center h-screen"><p>Loading...</p></div>;
     if (isError || !product) return <div className="flex justify-center items-center h-screen"><p>Error loading product.</p></div>;
@@ -46,6 +51,7 @@ const SingleProduct: React.FC = () => {
             photos: product.photos,
         };
         dispatch(addToCart(cartItem));
+        trackAddToCart(product.product_id, 1, Number(product.price), product.name);
     };
 
     const handleIncrement = (event: React.MouseEvent) => {

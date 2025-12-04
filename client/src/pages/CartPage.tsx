@@ -3,12 +3,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { incrementCartItem, decrementCartItem, removeCartItem, calculatePrice, resetCart, discountApplied } from '../redux/reducers/cart.reducer';
 import { useApplyCouponMutation } from '../redux/api/coupon.api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '../components/common/BackBtn';
+import { useEventTracking } from '../hooks/useEventTracking';
 
 const Cart: React.FC = () => {
   const dispatch = useDispatch();
   const { cartItems, subTotal, tax, shippingCharges, total, discount } = useSelector((state: RootState) => state.cart);
+  const { trackCheckout } = useEventTracking();
+  const navigate = useNavigate();
+
 
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState('');
@@ -198,12 +202,15 @@ const Cart: React.FC = () => {
               )}
             </div>
 
-            <Link
-              to="/shipping"
+            <button
+              onClick={() => {
+                trackCheckout(total - discount);
+                navigate('/shipping');
+              }}
               className="p-2 bg-yellow-500 text-white w-full py-2 rounded-lg block text-center hover:bg-yellow-600 transition"
             >
               Proceed to checkout
-            </Link>
+            </button>
           </div>
         </div>
       </div>

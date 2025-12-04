@@ -21,6 +21,7 @@ import paymentRoutes from './routes/payment.routes';
 import productRoutes from './routes/product.route';
 import statsRoutes from './routes/stats.route';
 import chatRoutes from './routes/chat.routes';
+import eventsRoutes from './routes/events.routes';
 
 import { apiErrorMiddleware } from './utils/ApiError';
 import winston from 'winston';
@@ -35,7 +36,13 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 // connectDB(); // Removed Mongoose connection
 
 // Apply middlewares
-app.use(cors({ credentials: true, origin: CLIENT_URL }));
+app.use(cors({
+    origin: CLIENT_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
+}));
 app.use(helmet());
 
 app.use(express.json());
@@ -76,6 +83,7 @@ app.use('/api/v1/coupons', couponRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/stats', statsRoutes);
 app.use('/api/v1/chat', chatRoutes);
+app.use('/api/events', eventsRoutes);
 
 // Serve static files (should be placed after API routes)
 if (process.env.NODE_ENV === 'production') {

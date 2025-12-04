@@ -4,6 +4,7 @@ import { useLoginUserMutation } from '../../redux/api/user.api';
 import { userExists } from '../../redux/reducers/user.reducer';
 import { AppDispatch } from '../../redux/store';
 import { notify } from '../../utils/util';
+import { useEventTracking } from '../../hooks/useEventTracking';
 
 
 const LOGIN_SUCCESS = 'Login successful';
@@ -17,6 +18,7 @@ const LoginPage: React.FC = () => {
 
     const [loginUser] = useLoginUserMutation();
     const dispatch = useDispatch<AppDispatch>();
+    const { trackLogin } = useEventTracking();
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -28,6 +30,7 @@ const LoginPage: React.FC = () => {
             const response = await loginUser({ email, password }).unwrap();
             if (response.user) {
                 dispatch(userExists(response.user));
+                trackLogin();
                 notify(LOGIN_SUCCESS, 'success');
             } else {
                 notify(LOGIN_FAILED, 'error');
