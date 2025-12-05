@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPaperPlane, FaTrash, FaRobot, FaUser, FaHistory, FaPlus, FaBars, FaChevronLeft } from 'react-icons/fa';
+import { FaPaperPlane, FaRobot, FaUser, FaHistory, FaPlus, FaChevronLeft } from 'react-icons/fa';
 import ReactMarkdown from 'react-markdown';
 import { useSelector } from 'react-redux';
 import ProductCard from '../../components/chat/ProductCard';
@@ -336,22 +336,7 @@ const AdminChat: React.FC = () => {
         }
     };
 
-    const handleClearChat = async () => {
-        if (!window.confirm('Are you sure you want to clear this chat session?')) return;
 
-        try {
-            await fetch(`${API_BASE_URL}/chat/history/${sessionId}`, {
-                method: 'DELETE'
-            });
-
-            setMessages([]);
-            if (user?.user_id) {
-                loadCustomerHistory(user.user_id);
-            }
-        } catch (error) {
-            console.error('Error clearing chat:', error);
-        }
-    };
 
     const handleExampleClick = (query: string) => {
         setInputValue(query);
