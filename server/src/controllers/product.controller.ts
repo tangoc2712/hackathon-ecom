@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
-import { BaseQueryType, NewProductBody, SearchProductsQuery } from "../types/types";
+import { BaseQueryType, NewProductBody, SearchProductsQuery, RequestWithUser  } from "../types/types";
 import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/asyncHandler";
 import { deleteImage } from "../utils/cloudinary";
@@ -545,6 +545,74 @@ export const getProductsRatings = asyncHandler(
         } catch (error: any) {
             console.error("Error fetching product ratings:", error);
             return next(new ApiError(500, `Internal Server Error fetching product ratings: ${error.message}`));
+        }
+    }
+);
+
+export const addProductReview = asyncHandler(
+    async (req: RequestWithUser, res: Response, next) => {
+        const { id } = req.params;
+        const { title, rating, comment } = req.body;
+        const userId = req.user?.user_id;
+
+        try {
+            // Validate required fields
+            if (!title || !rating) {
+                return next(new ApiError(400, "Tiêu đề và đánh giá là bắt buộc"));
+            }
+
+            if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+                return next(new ApiError(400, "Đánh giá phải là số từ 1 đến 5"));
+            }
+
+            if (title.length > 100) {
+                return next(new ApiError(400, "Tiêu đề không được vượt quá 100 ký tự"));
+            }
+
+            if (comment && comment.length > 500) {
+                return next(new ApiError(400, "Bình luận không được vượt quá 500 ký tự"));
+            }
+
+            // Check if product exists
+            const product = await prisma.product.findUnique({
+                where: { product_id: id }
+            });
+
+            if (!product) {
+                return next(new ApiError(404, "Sản phẩm không được tìm thấy"));
+            }
+
+            // Create review in database
+            const review = await prisma.productReview.create({
+                data: {
+                    product_id: id,
+                    user_id: userId,
+                    title,
+                    rating,
+                    comment: comment || null,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                }
+            });
+
+            console.log('✅ Review created for product:', id, 'by user:', userId);
+
+            return res.status(201).json({
+                success: true,
+                message: 'Đánh giá đã được thêm thành công',
+                productReview: {
+                    product_review_id: review.product_review_id,
+                    product_id: review.product_id,
+                    title: review.title,
+                    rating: review.rating,
+                    comment: review.comment,
+                    created_at: review.created_at,
+                    updated_at: review.updated_at
+                }
+            });
+        } catch (error: any) {
+            console.error("Error adding product review:", error);
+            return next(new ApiError(500, `Lỗi khi thêm đánh giá: ${error.message}`));
         }
     }
 );

@@ -12,7 +12,8 @@ import {
     searchProducts,
     toggleFeaturedStatus,
     updateProduct,
-    getProductsRatings
+    getProductsRatings,
+    addProductReview
 } from '../controllers/product.controller';
 import { uploadImage } from '../utils/cloudinary';
 import { adminOnly, authenticateUser } from '../middleware/auth.middleware';
@@ -40,6 +41,9 @@ router.get('/search', searchProducts);
 router.get('/:id', getProductDetails);
 router.get('/:id/related', getRelatedProducts);
 router.get('/:id/rating', getProductsRatings);
+
+// Protected routes (require authentication)
+router.post('/:id/rating', authenticateUser, addProductReview);
 
 
 export default router;

@@ -1,5 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { useGetProductRatingsQuery } from '../redux/api/product.api';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useGetProductRatingsQuery, useProductDetailsQuery } from '../redux/api/product.api';
+import { RootState } from '../redux/store';
+import AddReviewModal from './AddReviewModal';
 
 interface ProductRatingsProps {
     productId: string;
@@ -23,9 +27,31 @@ function Star({ filled }: { filled: boolean }) {
     );
 }
 
+const MiniStar = ({ filled }: { filled: boolean }) => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" className={`inline-block ${filled ? 'text-yellow-400' : 'text-gray-300'}`} xmlns="http://www.w3.org/2000/svg">
+        <path strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+    </svg>
+);
+
+const formatDate = (dateStr: string | undefined): string => {
+    if (!dateStr) return 'Unknown date';
+    try {
+        if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+            return dateStr.split('T')[0];
+        }
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return 'Invalid date';
+        return date.toLocaleDateString();
+    } catch {
+        return 'Invalid date';
+    }
+};
+
 const ProductRatings: React.FC<ProductRatingsProps> = ({ productId }) => {
-    const { data, isLoading, isError } = useGetProductRatingsQuery(productId);
-    const [showAll, setShowAll] = useState(false);
+    const navigate = useNavigate();
+    const { data, isLoading, isError, refetch } = useGetProductRatingsQuery(productId);
+    const { data: productData } = useProductDetailsQuery(productId);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const ratings = data?.productRatings ?? [];
 
@@ -47,73 +73,98 @@ const ProductRatings: React.FC<ProductRatingsProps> = ({ productId }) => {
     if (isError) return <div className="text-red-500">Failed to load reviews.</div>;
     if (!ratings || ratings.length === 0) return <div className="text-gray-600">No reviews yet.</div>;
 
-    const displayed = showAll ? ratings : ratings.slice(0, 6);
-
     return (
         <section className="mt-8">
+            {/* Product Title */}
+            {productData?.product && (
+                <h2 className="text-2xl font-bold mb-6 text-gray-900">{productData.product.name}</h2>
+            )}
+            
             <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
-                <div className="md:w-1/3">
-                    <div className="flex items-end space-x-3">
-                        <div className="text-5xl font-extrabold text-black">{stats.avg}</div>
-                        <div className="text-sm text-gray-600">/ 5</div>
-                    </div>
-                    <div className="mt-2 flex items-center">
-                        {starsArray(Math.round(stats.avg)).map((filled, i) => (
-                            <Star key={i} filled={filled} />
-                        ))}
-                        <div className="ml-2 text-sm text-gray-600">({stats.total} reviews)</div>
+                <div className="md:w-1/3 space-y-4">
+                    <h3 className="text-xl font-semibold">Rating Avg</h3>
+                    {/* Rating Avg Card */}
+                    <div className="border-2 border-gray-200 rounded-lg p-6 bg-white">
+                        <div className="flex items-end space-x-3">
+                            <div className="text-5xl font-extrabold text-black">{stats.avg}</div>
+                            <div className="text-sm text-gray-600">/ 5</div>
+                        </div>
+                        <div className="mt-2 flex items-center">
+                            {starsArray(Math.round(stats.avg)).map((filled, i) => (
+                                <Star key={i} filled={filled} />
+                            ))}
+                            <div className="ml-2 text-sm text-gray-600">({stats.total} reviews)</div>
+                        </div>
+
+                        <div className="mt-6 space-y-2">
+                            {[5, 4, 3, 2, 1].map((star) => {
+                                const count = stats.counts[star - 1] ?? 0;
+                                const pct = stats.total ? Math.round((count / stats.total) * 100) : 0;
+                                return (
+                                    <div key={star} className="flex items-center">
+                                        <div className="w-10 text-sm text-gray-700">{star} <span className="sr-only">star</span></div>
+                                        <div className="w-full bg-gray-200 h-3 rounded overflow-hidden mx-3">
+                                            <div className="bg-yellow-400 h-3" style={{ width: `${pct}%` }} />
+                                        </div>
+                                        <div className="w-12 text-sm text-gray-600">{count}</div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
 
-                    <div className="mt-6 space-y-2">
-                        {[5, 4, 3, 2, 1].map((star) => {
-                            const count = stats.counts[star - 1] ?? 0;
-                            const pct = stats.total ? Math.round((count / stats.total) * 100) : 0;
-                            return (
-                                <div key={star} className="flex items-center">
-                                    <div className="w-10 text-sm text-gray-700">{star} <span className="sr-only">star</span></div>
-                                    <div className="w-full bg-gray-200 h-3 rounded overflow-hidden mx-3">
-                                        <div className="bg-yellow-400 h-3" style={{ width: `${pct}%` }} />
-                                    </div>
-                                    <div className="w-12 text-sm text-gray-600">{count}</div>
-                                </div>
-                            );
-                        })}
-                    </div>
+                    {/* Buttons Section */}
+                    <button 
+                        onClick={() => setIsModalOpen(true)}
+                        className="w-full bg-black text-white py-3 font-semibold rounded-full hover:bg-gray-800 transition"
+                    >
+                        ADD COMMENTS
+                    </button>
+                    <button 
+                        onClick={() => navigate(`/product/${productId}`)}
+                        className="w-full border-2 border-black text-black py-3 font-semibold rounded-full hover:bg-gray-100 transition"
+                    >
+                        BACK
+                    </button>
                 </div>
 
                 <div className="md:w-2/3 mt-6 md:mt-0">
                     <h3 className="text-xl font-semibold mb-4">Customer Reviews</h3>
-                    <ul className="space-y-4">
-                        {displayed.map((r) => (
-                            <li key={r.product_review_id} className="p-4 border rounded-md bg-white">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="mt-2 font-semibold text-gray-900">{r.title}</div>
-                                        <div className="text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString()}</div>
+                    <div className="border-2 border-gray-200 rounded-lg p-6 bg-white max-h-[600px] overflow-y-auto">
+                        <ul className="space-y-4">
+                            {ratings.map((r) => (
+                                <li key={r.product_review_id} className="pb-4 border-b last:border-b-0">
+                                    {/* Title and Date */}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h4 className="font-semibold text-gray-900">{r.title}</h4>
+                                        <span className="text-sm text-gray-500">{formatDate(r.created_at)}</span>
                                     </div>
-                                    <div className="flex items-center space-x-1">
+
+                                    {/* Stars */}
+                                    <div className="flex items-center space-x-1 mb-2">
                                         {starsArray(Math.round(r.rating)).map((filled, i) => (
-                                            <Star key={i} filled={filled} />
+                                            <MiniStar key={i} filled={filled} />
                                         ))}
                                     </div>
-                                </div>
-                                {r.comment && <p className="mt-3 text-gray-700 text-sm">{r.comment}</p>}
-                            </li>
-                        ))}
-                    </ul>
 
-                    {ratings.length > displayed.length && (
-                        <div className="mt-4">
-                            <button
-                                onClick={() => setShowAll((s) => !s)}
-                                className="px-4 py-2 bg-gray-100 border rounded text-sm hover:bg-gray-200"
-                            >
-                                {showAll ? 'Show less' : `Show all ${ratings.length} reviews`}
-                            </button>
-                        </div>
-                    )}
+                                    {/* Comment */}
+                                    {r.comment && <p className="text-sm text-gray-700 mb-2">{r.comment}</p>}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
             </div>
+
+            {/* Add Review Modal */}
+            {productData?.product && (
+                <AddReviewModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    product={productData.product}
+                    onSubmitSuccess={() => refetch()}
+                />
+            )}
         </section>
     );
 };

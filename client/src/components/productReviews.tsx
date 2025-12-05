@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGetProductRatingsQuery } from '../redux/api/product.api';
+import { useGetProductRatingsQuery, useProductDetailsQuery } from '../redux/api/product.api';
+import AddReviewModal from './AddReviewModal';
 
 interface Props {
     productId: string;
@@ -28,8 +29,10 @@ const formatDate = (dateStr: string | undefined): string => {
 };
 
 const ProductReviews: React.FC<Props> = ({ productId }) => {
-    const { data, isLoading, isError } = useGetProductRatingsQuery(productId);
+    const { data, isLoading, isError, refetch } = useGetProductRatingsQuery(productId);
+    const { data: productData } = useProductDetailsQuery(productId);
     const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
 
     if (isLoading) return <div className="py-6">Loading reviews...</div>;
     if (isError) return <div className="py-6 text-red-500">Failed to load reviews.</div>;
@@ -86,10 +89,10 @@ const ProductReviews: React.FC<Props> = ({ productId }) => {
             {/* Buttons Section */}
             <div className="flex gap-4">
                 <button 
-                    onClick={() => navigate(`/products/${productId}/ratings`)}
+                    onClick={() => setIsModalOpen(true)}
                     className="flex-1 bg-black text-white py-3 font-semibold rounded-full hover:bg-gray-800 transition"
                 >
-                    VIẾT BÀI ĐÁNH GIÁ
+                    ADD COMMENTS
                 </button>
                 <button 
                     onClick={() => navigate(`/products/${productId}/ratings`)}
@@ -98,6 +101,16 @@ const ProductReviews: React.FC<Props> = ({ productId }) => {
                     VIEW MORE
                 </button>
             </div>
+
+            {/* Add Review Modal */}
+            {productData?.product && (
+                <AddReviewModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    product={productData.product}
+                    onSubmitSuccess={() => refetch()}
+                />
+            )}
         </section>
     );
 };
