@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useGetProductRatingsQuery, useProductDetailsQuery } from '../redux/api/product.api';
-import { RootState } from '../redux/store';
 import AddReviewModal from './AddReviewModal';
 
 interface ProductRatingsProps {
@@ -79,7 +77,7 @@ const ProductRatings: React.FC<ProductRatingsProps> = ({ productId }) => {
             {productData?.product && (
                 <h2 className="text-2xl font-bold mb-6 text-gray-900">{productData.product.name}</h2>
             )}
-            
+
             <div className="flex flex-col md:flex-row md:items-start md:space-x-8">
                 <div className="md:w-1/3 space-y-4">
                     <h3 className="text-xl font-semibold">Rating Avg</h3>
@@ -114,13 +112,13 @@ const ProductRatings: React.FC<ProductRatingsProps> = ({ productId }) => {
                     </div>
 
                     {/* Buttons Section */}
-                    <button 
+                    <button
                         onClick={() => setIsModalOpen(true)}
                         className="w-full bg-black text-white py-3 font-semibold rounded-full hover:bg-gray-800 transition"
                     >
                         ADD COMMENTS
                     </button>
-                    <button 
+                    <button
                         onClick={() => navigate(`/product/${productId}`)}
                         className="w-full border-2 border-black text-black py-3 font-semibold rounded-full hover:bg-gray-100 transition"
                     >
